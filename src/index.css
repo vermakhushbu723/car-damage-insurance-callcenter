@@ -1,0 +1,76 @@
+@import 'tailwindcss';
+
+@theme {
+    /* Brand palette – taken from the IBima Assist claim-management screens */
+    --color-brand-header: #83a2e3;
+    --color-brand-primary: #1450d8;
+    --color-brand-primary-dark: #0f3fb0;
+    --color-brand-label: #1668e3;
+    --color-brand-heading: #123fa8;
+    --color-brand-navy: #061635;
+    --color-brand-navy-soft: #0d2551;
+    --color-surface: #f7f9fc;
+    --color-field: #f3f5f9;
+}
+
+:root {
+    --header-height: 64px;
+    --sidebar-width: 250px;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-size: 12.5px;
+    background: #f7f9fc;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Ant Design tweaks so the controls match the mock-ups ---- */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-picker,
+.ant-select .ant-select-selector,
+.ant-input-number {
+    background-color: #f3f5f9 !important;
+    border-color: #e6eaf2 !important;
+}
+
+.ant-input::placeholder,
+.ant-picker-input > input::placeholder,
+.ant-select-selection-placeholder {
+    color: #9aa4b8 !important;
+}
+
+.ant-form-item {
+    margin-bottom: 0;
+}
+
+/* Cards sit a little tighter now that the type scale is smaller. */
+.ant-card .ant-card-body {
+    padding: 14px 16px;
+}
+
+.ant-tabs-tab {
+    padding: 8px 0 !important;
+}
+
+/* Thin, quiet scrollbars */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+*::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
