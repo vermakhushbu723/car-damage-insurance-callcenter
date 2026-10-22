@@ -1,10 +1,12 @@
 import { Button } from 'antd';
 import { CheckCircleOutlined, DownloadOutlined, FileTextOutlined, WarningOutlined } from '@ant-design/icons';
 
-import { ILA_SUMMARY, formatINR } from '../../data/ilaData.js';
+import { formatINR } from '../../data/ilaData.js';
+import cn from '../../utils/cn.js';
 
 /** Blue estimate card with the cost breakdown and the two AI verdicts. */
-export default function IlaSummaryCard({ summary = ILA_SUMMARY, onGenerate, onDownload }) {
+export default function IlaSummaryCard({ summary, generatedAt, busy, onGenerate, onDownload }) {
+    if (!summary) return null;
     return (
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
             <div className="bg-linear-to-b from-[#1450d8] to-[#0d3aa6] px-5 py-5 text-white">
@@ -14,7 +16,7 @@ export default function IlaSummaryCard({ summary = ILA_SUMMARY, onGenerate, onDo
                         {summary.badge}
                     </span>
                 </div>
-                <p className="mb-1 text-[11px] text-white/75">{summary.title}</p>
+                <p className="mb-1 text-[11px] text-white/75">AI ILA Estimate</p>
                 <p className="mb-1 text-[20px] leading-7 font-bold">₹{formatINR(summary.total)}</p>
                 <p className="mb-0 text-[11.5px] font-medium text-white/90">{summary.vehicle}</p>
                 <p className="mb-0 text-[10.5px] text-white/70">{summary.meta}</p>
@@ -30,11 +32,11 @@ export default function IlaSummaryCard({ summary = ILA_SUMMARY, onGenerate, onDo
             </div>
 
             <div className="space-y-2.5 px-5 pb-4">
-                <div className="rounded-lg bg-emerald-50 px-3.5 py-3">
-                    <p className="mb-0.5 flex items-center gap-2 text-[11.5px] font-bold text-emerald-600">
+                <div className={cn('rounded-lg px-3.5 py-3', summary.recommendation.ok ? 'bg-emerald-50' : 'bg-amber-50')}>
+                    <p className={cn('mb-0.5 flex items-center gap-2 text-[11.5px] font-bold', summary.recommendation.ok ? 'text-emerald-600' : 'text-amber-600')}>
                         <CheckCircleOutlined /> {summary.recommendation.title}
                     </p>
-                    <p className="mb-0 text-[11px] text-emerald-700/80">{summary.recommendation.detail}</p>
+                    <p className="mb-0 text-[11px] text-slate-600">{summary.recommendation.detail}</p>
                 </div>
 
                 <div className="rounded-lg bg-slate-100 px-3.5 py-3">
@@ -46,10 +48,10 @@ export default function IlaSummaryCard({ summary = ILA_SUMMARY, onGenerate, onDo
             </div>
 
             <div className="flex flex-col gap-2.5 px-5 pb-5">
-                <Button type="primary" icon={<FileTextOutlined />} onClick={onGenerate}>
-                    Generate ILA Report
+                <Button type="primary" icon={<FileTextOutlined />} loading={busy === 'report'} onClick={onGenerate}>
+                    {generatedAt ? 'Regenerate ILA Report' : 'Generate ILA Report'}
                 </Button>
-                <Button icon={<DownloadOutlined />} onClick={onDownload} className="!text-[#1450d8]">
+                <Button icon={<DownloadOutlined />} loading={busy === 'pdf'} onClick={onDownload} className="!text-[#1450d8]">
                     Download Draft (PDF)
                 </Button>
             </div>

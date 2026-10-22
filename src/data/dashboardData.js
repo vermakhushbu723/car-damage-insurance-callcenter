@@ -1,130 +1,34 @@
-/** KPI tiles on the intimation dashboard. */
+/** KPI tiles on the intimation dashboard; `key` = field of GET /dashboard `stats`. */
 export const DASHBOARD_STATS = [
     {
-        key: 'total-intimation',
+        key: 'totalIntimation',
         title: 'Total Intimation',
-        value: '1,245',
         caption: 'All Time Registered',
-        trend: { direction: 'up', value: '18.6%', label: 'VS Last 30 Days' },
         tone: 'blue',
         icon: 'file',
     },
     {
-        key: 'new-intimations',
+        key: 'newIntimations',
         title: 'New Intimations',
-        value: '186',
         caption: 'In Last 24 Hours',
-        trend: { direction: 'up', value: '12.4%', label: 'VS Yesterday' },
         tone: 'green',
         icon: 'file-add',
     },
     {
-        key: 'pending-allocation',
+        key: 'pendingAllocation',
         title: 'Pending Allocation',
-        value: '98',
         caption: 'Awaiting Handler Assignment',
-        trend: { direction: 'down', value: '-8.3', label: 'VS Yesterday' },
         tone: 'orange',
         icon: 'pending',
     },
     {
-        key: 'link-sent',
+        key: 'linkSent',
         title: 'Link Sent',
-        value: '367',
         caption: 'Survey Links Sent',
-        trend: { direction: 'up', value: '15.7%', label: 'VS Yesterday' },
         tone: 'purple',
         icon: 'send',
     },
 ];
-
-export const NEW_INTIMATIONS = [
-    {
-        key: '1',
-        claimId: 'CLM-240815',
-        intimationTime: 'POL-458921',
-        customerName: 'Rahul Sharma',
-        vehicleNo: 'OD 02 J 1234',
-        mobileNo: '+91 1234567890',
-        location: 'Bhubaneswar,Odisha',
-        source: 'Call Center',
-        priority: 'High',
-    },
-    {
-        key: '2',
-        claimId: 'CLM-240816',
-        intimationTime: 'POL-458921',
-        customerName: 'Amit Verma',
-        vehicleNo: 'MH 12 X 1234',
-        mobileNo: '+91 1234567890',
-        location: 'Mumbai, Maharastra',
-        source: 'Website',
-        priority: 'Medium',
-    },
-    {
-        key: '3',
-        claimId: 'CLM-240817',
-        intimationTime: 'POL-458921',
-        customerName: 'Neha Patil',
-        vehicleNo: 'OD 02 J 1234',
-        mobileNo: '+91 1234567890',
-        location: 'Ahmedabad,Gujarat',
-        source: 'App',
-        priority: 'High',
-    },
-    {
-        key: '4',
-        claimId: 'CLM-240818',
-        intimationTime: 'POL-458921',
-        customerName: 'Arjun Das',
-        vehicleNo: 'MH 12 X 1234',
-        mobileNo: '+91 1234567890',
-        location: 'Bengaluru, Karnataka',
-        source: 'Call Center',
-        priority: 'Low',
-    },
-    {
-        key: '5',
-        claimId: 'CLM-240819',
-        intimationTime: 'POL-458921',
-        customerName: 'Priya Singh',
-        vehicleNo: 'OD 02 J 1234',
-        mobileNo: '+91 1234567890',
-        location: 'New Delhi, Delhi',
-        source: 'Website',
-        priority: 'High',
-    },
-    {
-        key: '6',
-        claimId: 'CLM-240820',
-        intimationTime: 'POL-458921',
-        customerName: 'Amit Verma',
-        vehicleNo: 'MH 12 X 1234',
-        mobileNo: '+91 1234567890',
-        location: 'Kolkata, West Bengal',
-        source: 'App',
-        priority: 'Medium',
-    },
-    {
-        key: '7',
-        claimId: 'CLM-240821',
-        intimationTime: 'POL-458921',
-        customerName: 'Neha Patil',
-        vehicleNo: 'OD 02 J 1234',
-        mobileNo: '+91 1234567890',
-        location: 'Indoor, MP',
-        source: 'Website',
-        priority: 'Low',
-    },
-];
-
-export const PENDING_ALLOCATION = Array.from({ length: 5 }, (_, index) => ({
-    key: String(index + 1),
-    claimId: 'CLM-240815',
-    intimationTime: '30 April 2025, 06:20 PM',
-    customerName: 'Rahul Sharma',
-    tatLeft: '22h 15m',
-}));
 
 export const PRIORITY_TONES = {
     High: 'bg-red-100 text-red-600',
@@ -132,4 +36,3 @@ export const PRIORITY_TONES = {
     Low: 'bg-emerald-100 text-emerald-700',
 };
 
-export const TOTAL_PAGES = 58;

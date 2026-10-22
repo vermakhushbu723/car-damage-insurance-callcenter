@@ -3,7 +3,6 @@ import { Button, InputNumber, Select, Table } from 'antd';
 import {
     ACTION_OPTIONS,
     DAMAGE_TYPE_OPTIONS,
-    MODEL_NAME,
     SEVERITY_OPTIONS,
     STATUS_OPTIONS,
     TABLE_TONES,
@@ -16,12 +15,13 @@ const header = (label) => (
 );
 
 /** Every editable cell is the same select, just with a different option set. */
-function ToneSelect({ value, options, tones, onChange }) {
+function ToneSelect({ value, options, tones, onChange, disabled }) {
     return (
         <Select
             value={value}
             options={options}
             onChange={onChange}
+            disabled={disabled}
             className={cn('w-[130px] font-semibold', tones?.[value])}
             popupMatchSelectWidth={false}
         />
@@ -32,7 +32,7 @@ function ToneSelect({ value, options, tones, onChange }) {
  * The AI's part-by-part findings. Every cell is editable because the CSM's
  * corrections are what feed the retraining pipeline.
  */
-export default function DetectedDamageTable({ rows, onChange, onApproveAll, onExport }) {
+export default function DetectedDamageTable({ rows, onChange, onApproveAll, onExport, selected = [], onSelect, disabled = false, model }) {
     const update = (key, field) => (value) => onChange(key, field, value);
 
     const totals = rows.reduce(
@@ -53,7 +53,11 @@ export default function DetectedDamageTable({ rows, onChange, onApproveAll, onEx
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1450d8] text-[11px] font-bold text-white">
                         {row.key}
                     </span>
-                    <span className="text-[11.5px] font-semibold text-slate-900">{row.part}</span>
+                    <span className="text-[11.5px] font-semibold text-slate-900">
+                        {row.part}
+                        {row.source === 'reviewer' ? <span className="ml-1.5 text-[10px] font-normal text-violet-600">(added)</span> : null}
+                        {row.corrected ? <span className="ml-1.5 text-[10px] font-normal text-amber-600">(corrected)</span> : null}
+                    </span>
                 </div>
             ),
         },
@@ -65,7 +69,8 @@ export default function DetectedDamageTable({ rows, onChange, onApproveAll, onEx
                     value={row.damageType}
                     options={DAMAGE_TYPE_OPTIONS}
                     tones={TABLE_TONES.damageType}
-                    onChange={update(row.key, 'damageType')}
+                    onChange={update(row.id, 'damageType')}
+                    disabled={disabled}
                 />
             ),
         },
@@ -77,7 +82,8 @@ export default function DetectedDamageTable({ rows, onChange, onApproveAll, onEx
                     value={row.severity}
                     options={SEVERITY_OPTIONS}
                     tones={TABLE_TONES.severity}
-                    onChange={update(row.key, 'severity')}
+                    onChange={update(row.id, 'severity')}
+                    disabled={disabled}
                 />
             ),
         },
@@ -89,7 +95,8 @@ export default function DetectedDamageTable({ rows, onChange, onApproveAll, onEx
                     value={row.action}
                     options={ACTION_OPTIONS}
                     tones={TABLE_TONES.action}
-                    onChange={update(row.key, 'action')}
+                    onChange={update(row.id, 'action')}
+                    disabled={disabled}
                 />
             ),
         },
@@ -104,7 +111,8 @@ export default function DetectedDamageTable({ rows, onChange, onApproveAll, onEx
                     className="w-[120px]"
                     formatter={(value) => formatINR(Number(value || 0))}
                     parser={(value) => Number(String(value).replace(/[^\d]/g, ''))}
-                    onChange={(value) => update(row.key, 'cost')(value || 0)}
+                    disabled={disabled}
+                    onChange={(value) => update(row.id, 'cost')(value || 0)}
                 />
             ),
         },
@@ -114,11 +122,11 @@ export default function DetectedDamageTable({ rows, onChange, onApproveAll, onEx
             render: (_value, row) => (
                 <div className="w-[130px]">
                     <span className="mb-1 block text-center text-[11.5px] font-semibold text-slate-800">
-                        {row.confidence}%
+                        {row.confidence === null ? 'Reviewer' : `${row.confidence}%`}
                     </span>
                     <span className="block h-1 w-full rounded-full bg-slate-200">
                         <span
-                            style={{ width: `${row.confidence}%` }}
+                            style={{ width: `${row.confidence ?? 0}%` }}
                             className={cn(
                                 'block h-1 rounded-full',
                                 row.confidence >= 90
@@ -140,7 +148,8 @@ export default function DetectedDamageTable({ rows, onChange, onApproveAll, onEx
                     value={row.status}
                     options={STATUS_OPTIONS}
                     tones={TABLE_TONES.status}
-                    onChange={update(row.key, 'status')}
+                    onChange={update(row.id, 'status')}
+                    disabled={disabled}
                 />
             ),
         },
@@ -153,14 +162,14 @@ export default function DetectedDamageTable({ rows, onChange, onApproveAll, onEx
                     <p className="mb-0.5 text-[11.5px] font-bold tracking-wide text-[#1450d8] uppercase">Detected</p>
                     <h3 className="mb-0.5 text-[15px] leading-6 font-bold text-slate-900">AI Damage Assessment</h3>
                     <p className="mb-0 text-[11px] text-slate-500">
-                        {rows.length} Parts Identified – Order By Severity
+                        {rows.length} Parts Identified – Order By Severity{selected.length ? ` · ${selected.length} selected` : ''}
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-3">
                     <Button onClick={onExport} className="!text-[#1450d8]">
                         Export CSV
                     </Button>
-                    <Button type="primary" onClick={onApproveAll}>
+                    <Button type="primary" disabled={disabled || !rows.length} onClick={onApproveAll}>
                         Approve All
                     </Button>
                 </div>
@@ -169,8 +178,10 @@ export default function DetectedDamageTable({ rows, onChange, onApproveAll, onEx
             <Table
                 columns={columns}
                 dataSource={rows}
-                rowKey="key"
+                rowKey="id"
                 pagination={false}
+                rowSelection={onSelect ? { selectedRowKeys: selected, onChange: onSelect, getCheckboxProps: () => ({ disabled }) } : undefined}
+                locale={{ emptyText: 'No damages yet. Run the AI on the vehicle photos, or use "Add Damages".' }}
                 scroll={{ x: 'max-content' }}
                 className="[&_.ant-table-thead>tr>th]:!bg-[#f1f5f9]"
             />
@@ -181,7 +192,7 @@ export default function DetectedDamageTable({ rows, onChange, onApproveAll, onEx
                     <span className="font-semibold text-slate-800">₹{formatINR(totals.cost)}</span> total est.
                 </span>
                 <span>
-                    Model <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-slate-700">{MODEL_NAME}</span>
+                    Model <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-slate-700">{model ?? '—'}</span>
                 </span>
             </footer>
         </section>

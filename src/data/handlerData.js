@@ -1,14 +1,4 @@
-/** Handler Allocation screen. */
-
-export const CURRENT_HANDLER = {
-    name: 'Rahul Kumar',
-    role: 'Claims Handler',
-    team: 'Noida Claims Team',
-    location: 'Noida, Uttar Pradesh - 201301',
-    workshop: 'ABC Motors, Noida',
-    assignedOn: '01 May 2025, 10:47 AM',
-    assignmentMethod: 'Auto(Based On LOS Location, PIN, Workshop)',
-};
+/** Handler Allocation screen (handlers themselves come from GET /handlers). */
 
 export const REASSIGNMENT_REASONS = [
     { label: 'Workload Balancing', value: 'workload' },
@@ -31,21 +21,3 @@ export const HANDLER_FILTERS = [
     { key: 'team', label: 'Team' },
     { key: 'availability', label: 'Availability' },
 ];
-
-export const FILTER_OPTIONS = [
-    { label: 'All', value: 'all' },
-    { label: 'Noida', value: 'noida' },
-    { label: 'Delhi', value: 'delhi' },
-    { label: 'Ghaziabad', value: 'ghaziabad' },
-];
-
-export const AVAILABLE_HANDLERS = Array.from({ length: 3 }, (_, index) => ({
-    key: String(index + 1),
-    name: 'Suresh Sharma',
-    handler: 'Letter Sent',
-    handlerNote: 'Acknowledge Letter',
-    location: 'Noida',
-    locationNote: '(UP)',
-    currentLoad: '18/30',
-    status: 'Available',
-}));

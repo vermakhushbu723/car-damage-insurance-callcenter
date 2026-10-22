@@ -34,6 +34,9 @@ export default function ReviewerToolkit({
     onSave,
     onApprove,
     onReject,
+    disabled = false,
+    decision = null,
+    busy = null,
 }) {
     return (
         <section className="grid grid-cols-1 gap-5 rounded-xl border border-slate-200 bg-white px-5 py-4 xl:grid-cols-2">
@@ -51,8 +54,9 @@ export default function ReviewerToolkit({
                             <button
                                 key={action.key}
                                 type="button"
+                                disabled={disabled}
                                 onClick={() => onAction?.(action)}
-                                className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2.5 text-[11.5px] text-slate-700 transition hover:border-[#1450d8] hover:text-[#1450d8]"
+                                className="flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-lg border border-slate-200 px-3 py-2.5 text-[11.5px] text-slate-700 transition hover:border-[#1450d8] hover:text-[#1450d8]"
                             >
                                 <Icon className="text-[12px]" />
                                 {action.label}
@@ -61,9 +65,16 @@ export default function ReviewerToolkit({
                     })}
                 </div>
 
+                {decision ? (
+                    <p className="mt-3 mb-0 text-[11px] font-semibold text-slate-700">
+                        AI assessment {decision.decision.toLowerCase()} by {decision.decidedBy}
+                    </p>
+                ) : null}
                 <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                     <Button
                         icon={<LikeOutlined />}
+                        disabled={disabled}
+                        loading={busy === 'Approved'}
                         onClick={onApprove}
                         className="!border-emerald-500 !bg-emerald-500 !text-white hover:!bg-emerald-600"
                     >
@@ -71,6 +82,8 @@ export default function ReviewerToolkit({
                     </Button>
                     <Button
                         icon={<DislikeOutlined />}
+                        disabled={disabled}
+                        loading={busy === 'Rejected'}
                         onClick={onReject}
                         className="!border-red-500 !bg-red-500 !text-white hover:!bg-red-600"
                     >

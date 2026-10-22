@@ -1,65 +1,15 @@
-/** Header blocks shared by every claim-processing screen. */
+/** Static parts of the header shared by every claim-processing screen. */
 
-export const CLAIM_IDENTITY = [
-    { key: 'assistClaimId', label: 'Assist Claim ID', value: 'BIM-250501-1021', muted: true, copy: true },
-    { key: 'claimNo', label: 'Claim No', value: 'CLM-250501-1021', muted: true },
-    { key: 'insuredName', label: 'Insured Name', value: 'Amit Verma' },
-    { key: 'policyNo', label: 'Policy No', value: '1234567890' },
-    { key: 'productType', label: 'Product Type', value: 'Private Car Package' },
-    { key: 'claimType', label: 'Claim Type', value: 'Motor OD' },
-    { key: 'natureOfLoss', label: 'Nature Of Loss', value: 'Accidental Damage' },
-];
-
-export const CLAIM_META = [
-    {
-        key: 'tat',
-        label: 'TAT',
-        value: '2D 06H 24M',
-        note: 'SLA Risk',
-        icon: 'clock',
-        tone: 'red',
-        valueTone: 'text-red-500',
-    },
-    {
-        key: 'stage',
-        label: 'Current Stage',
-        value: 'Claim Details',
-        note: 'In Progress',
-        icon: 'file',
-        tone: 'blue',
-        valueTone: 'text-[#1450d8]',
-    },
-    { key: 'workshop', label: 'Workshop', value: 'ABC Motors', icon: 'shop', tone: 'orange' },
-    { key: 'loss-location', label: 'Loss Location', value: 'Noida', note: 'Pin: 201301', icon: 'pin', tone: 'violet' },
-    {
-        key: 'fraud',
-        label: 'Fraud Trigger',
-        value: '2 Triggers',
-        note: 'Risk: High',
-        icon: 'alert',
-        tone: 'red',
-        valueTone: 'text-red-500',
-    },
-    {
-        key: 'amount',
-        label: 'Claim Amount',
-        value: '1,25,500',
-        note: 'As On 01 May 2025',
-        icon: 'rupee',
-        tone: 'green',
-    },
-];
-
-/** Ordered lifecycle – a page marks everything up to its own stage as done. */
+/** Ordered claim journey; done / time come from the claim (stage tracker). */
 export const CLAIM_STAGES = [
-    { key: 'intimation', label: 'Intimation', time: '01 May, 10:45 AM', icon: 'check' },
-    { key: 'handler-allocation', label: 'Handler Allocation', time: '01 May, 10:50 AM', icon: 'user' },
-    { key: 'surveyor-assignment', label: 'Surveyor Assignment', time: '01 May, 10:55 AM', icon: 'search' },
-    { key: 'claim-details', label: 'Claim Details', time: '01 May, 11:00 AM', icon: 'file' },
-    { key: 'ai-ila', label: 'AI ILA', time: '01 May, 11:05 AM', icon: 'sparkle' },
-    { key: 'fla', label: 'FLA', time: '01 May, 11:10 AM', icon: 'shield' },
-    { key: 'payment-recommendation', label: 'Payment Recommendation', time: '01 May, 11:15 AM', icon: 'wallet' },
-    { key: 'survey-paybill', label: 'Survey Paybill', time: '01 May, 11:15 AM', icon: 'card' },
+    { key: 'intimation', label: 'Intimation', icon: 'check' },
+    { key: 'handler-allocation', label: 'Handler Allocation', icon: 'user' },
+    { key: 'surveyor-assignment', label: 'Surveyor Assignment', icon: 'search' },
+    { key: 'claim-details', label: 'Claim Details', icon: 'file' },
+    { key: 'ai-ila', label: 'AI ILA', icon: 'sparkle' },
+    { key: 'fla', label: 'FLA', icon: 'shield' },
+    { key: 'payment-recommendation', label: 'Payment Recommendation', icon: 'wallet' },
+    { key: 'survey-paybill', label: 'Survey Paybill', icon: 'card' },
 ];
 
 export const CLAIM_ACTION_BUTTONS = [

@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ConfigProvider, App as AntdApp } from 'antd';
 
 import App from './App.jsx';
+import { AppProvider } from './context/AppContext.jsx';
 import antdTheme from './theme/antdTheme.js';
 import './index.css';
 
@@ -12,7 +13,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <ConfigProvider theme={antdTheme}>
             <AntdApp>
                 <BrowserRouter>
-                    <App />
+                    <AppProvider>
+                        <App />
+                    </AppProvider>
                 </BrowserRouter>
             </AntdApp>
         </ConfigProvider>

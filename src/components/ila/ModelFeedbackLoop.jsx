@@ -6,7 +6,6 @@ import {
     RightOutlined,
 } from '@ant-design/icons';
 
-import { FEEDBACK_STATS, FEEDBACK_STEPS, PIPELINE_STATUS } from '../../data/ilaData.js';
 import cn from '../../utils/cn.js';
 
 const STEP_STYLES = {
@@ -16,7 +15,7 @@ const STEP_STYLES = {
 };
 
 /** Six-stage retraining pipeline plus its weekly numbers. */
-export default function ModelFeedbackLoop({ steps = FEEDBACK_STEPS, stats = FEEDBACK_STATS }) {
+export default function ModelFeedbackLoop({ steps = [], stats = [], pipeline = { label: '', version: '', healthy: false } }) {
     return (
         <section className="rounded-xl border border-slate-200 bg-white px-5 py-4">
             <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
@@ -30,11 +29,11 @@ export default function ModelFeedbackLoop({ steps = FEEDBACK_STEPS, stats = FEED
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <span className="flex items-center gap-1.5 text-[10.5px] text-emerald-600">
-                        <span className="h-2 w-2 rounded-full bg-emerald-500" /> {PIPELINE_STATUS.label}
+                    <span className={cn('flex items-center gap-1.5 text-[10.5px]', pipeline.healthy ? 'text-emerald-600' : 'text-amber-600')}>
+                        <span className={cn('h-2 w-2 rounded-full', pipeline.healthy ? 'bg-emerald-500' : 'bg-amber-500')} /> {pipeline.label}
                     </span>
                     <span className="rounded-md border border-slate-200 px-2 py-0.5 text-[10.5px] text-slate-500">
-                        {PIPELINE_STATUS.version}
+                        {pipeline.version}
                     </span>
                 </div>
             </header>
@@ -98,7 +97,7 @@ export default function ModelFeedbackLoop({ steps = FEEDBACK_STEPS, stats = FEED
                                 ) : (
                                     <ArrowUpOutlined className="text-[9px]" />
                                 )}
-                                {stat.delta}
+                                    {stat.delta ?? '—'}
                             </span>
                         </span>
                     </div>

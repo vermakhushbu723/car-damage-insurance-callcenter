@@ -1,44 +1,40 @@
 import { useMemo, useState } from 'react';
-import { App, Button, Input, Tabs } from 'antd';
+import { Button, Dropdown, Input, Tabs } from 'antd';
 import { ArrowLeftOutlined, DownloadOutlined, FilterOutlined, SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
-import {
-    COMMUNICATION_FILTERS,
-    COMMUNICATION_HISTORY,
-    buildCommunicationStats,
-} from '../../data/communicationData.js';
-import { CLAIM_SUMMARY } from '../../data/claimData.js';
 import CommunicationTable from '../../components/communication/CommunicationTable.jsx';
 import ClaimSidePanel from '../../components/communication/ClaimSidePanel.jsx';
+import useCommunications, { COMMUNICATION_FILTERS, buildStats } from '../../components/communication/useCommunications.jsx';
+import { NoClaim } from '../../components/claim/ClaimShell.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
+import { useAppState } from '../../context/AppContext.jsx';
+import { MODULES } from '../../constants/navigation.js';
 import ROUTES from '../../constants/routes.js';
 import { matchesSearch } from '../../utils/search.js';
 
+const CHANNELS = ['Email', 'SMS', 'WhatsApp', 'Phone', 'Portal'];
+
 export default function CommunicationHistoryPage() {
     const navigate = useNavigate();
-    const { message } = App.useApp();
+    const { claim, can } = useAppState();
+    const comm = useCommunications(claim);
     const [activeTab, setActiveTab] = useState('all');
     const [search, setSearch] = useState('');
-
-    const stats = useMemo(() => buildCommunicationStats(COMMUNICATION_HISTORY), []);
+    const [channel, setChannel] = useState(null);
 
     const rows = useMemo(
-        () => COMMUNICATION_HISTORY.filter(COMMUNICATION_FILTERS[activeTab]).filter((row) => matchesSearch(row, search)),
-        [activeTab, search]
-    );
-
-    const counts = useMemo(
         () =>
-            Object.fromEntries(
-                Object.entries(COMMUNICATION_FILTERS).map(([key, predicate]) => [
-                    key,
-                    COMMUNICATION_HISTORY.filter(predicate).length,
-                ])
-            ),
-        []
+            comm.rows
+                .filter(COMMUNICATION_FILTERS[activeTab])
+                .filter((row) => !channel || row.channel === channel)
+                .filter((row) => matchesSearch(row, search)),
+        [comm.rows, activeTab, channel, search]
     );
 
+    if (!claim) return <NoClaim />;
+
+    const counts = comm.data?.counts ?? { all: 0, sent: 0, received: 0, pending: 0 };
     const tabItems = [
         { key: 'all', label: `All (${counts.all})` },
         { key: 'sent', label: `Letters Sent (${counts.sent})` },
@@ -50,7 +46,7 @@ export default function CommunicationHistoryPage() {
         <div className="flex flex-col gap-4">
             <button
                 type="button"
-                onClick={() => navigate(ROUTES.intimation)}
+                onClick={() => navigate(can(MODULES.details) ? ROUTES.claimDetails : ROUTES.intimation)}
                 className="flex w-fit items-center gap-2 text-[11.5px] font-medium text-[#1450d8] hover:underline"
             >
                 <ArrowLeftOutlined /> Back to Claim
@@ -65,33 +61,27 @@ export default function CommunicationHistoryPage() {
                 <div className="xl:pt-1">
                     <div className="flex flex-wrap items-center gap-2 text-[11.5px]">
                         <span className="font-semibold text-slate-700">Claim ID:</span>
-                        <span className="font-semibold text-[#1450d8]">{CLAIM_SUMMARY.claimId}</span>
-                        <span className="rounded-md bg-emerald-50 px-2 py-1 text-[10.5px] font-semibold text-emerald-700">
-                            {CLAIM_SUMMARY.currentStage}
-                        </span>
+                        <span className="font-semibold text-[#1450d8]">{claim.claimNo}</span>
+                        <span className="rounded-md bg-emerald-50 px-2 py-1 text-[10.5px] font-semibold text-emerald-700">{claim.stageLabel}</span>
                     </div>
                     <div className="mt-1.5 flex flex-wrap gap-x-2 text-[11px] text-slate-500">
                         <span>
-                            Insured Name: <span className="font-medium text-slate-800">{CLAIM_SUMMARY.insuredName}</span>
+                            Insured Name: <span className="font-medium text-slate-800">{claim.insuredName || '—'}</span>
                         </span>
                         <span>|</span>
                         <span>
-                            Vehicle No.: <span className="font-medium text-slate-800">{CLAIM_SUMMARY.vehicleNo}</span>
+                            Vehicle No.: <span className="font-medium text-slate-800">{claim.vehicleNo || '—'}</span>
                         </span>
                     </div>
                 </div>
 
-                <Button
-                    icon={<DownloadOutlined />}
-                    onClick={() => message.success('History exported')}
-                    className="w-fit"
-                >
+                <Button icon={<DownloadOutlined />} disabled={!can(MODULES.communication, 'download')} onClick={comm.exportCsv} className="w-fit">
                     Export History
                 </Button>
             </header>
 
             <section className="grid grid-cols-1 gap-2 divide-slate-100 rounded-xl border border-slate-100 bg-white p-4 shadow-[0_1px_3px_rgba(16,24,40,0.05)] sm:grid-cols-2 xl:grid-cols-4 xl:divide-x">
-                {stats.map((stat) => (
+                {buildStats(comm.data).map((stat) => (
                     <StatCard key={stat.key} stat={stat} variant="summary" />
                 ))}
             </section>
@@ -99,12 +89,7 @@ export default function CommunicationHistoryPage() {
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
                 <section className="min-w-0 flex-1 overflow-hidden rounded-xl border border-slate-100 bg-white shadow-[0_1px_3px_rgba(16,24,40,0.05)]">
                     <div className="flex flex-col gap-3 px-4 pt-3 lg:flex-row lg:items-center lg:justify-between">
-                        <Tabs
-                            activeKey={activeTab}
-                            onChange={setActiveTab}
-                            items={tabItems}
-                            className="min-w-0 flex-1 [&_.ant-tabs-nav]:!mb-0"
-                        />
+                        <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} className="min-w-0 flex-1 [&_.ant-tabs-nav]:!mb-0" />
                         <div className="flex items-center gap-2 pb-3 lg:pb-0">
                             <Input
                                 allowClear
@@ -114,9 +99,17 @@ export default function CommunicationHistoryPage() {
                                 prefix={<SearchOutlined className="text-slate-400" />}
                                 className="w-full lg:w-[220px]"
                             />
-                            <Button icon={<FilterOutlined />} onClick={() => message.info('Filters')}>
-                                Filters
-                            </Button>
+                            <Dropdown
+                                trigger={['click']}
+                                menu={{
+                                    items: [{ key: 'all', label: 'All channels' }, ...CHANNELS.map((c) => ({ key: c, label: c }))],
+                                    selectable: true,
+                                    selectedKeys: [channel ?? 'all'],
+                                    onClick: ({ key }) => setChannel(key === 'all' ? null : key),
+                                }}
+                            >
+                                <Button icon={<FilterOutlined />}>{channel ?? 'Filters'}</Button>
+                            </Dropdown>
                         </div>
                     </div>
 
@@ -124,9 +117,10 @@ export default function CommunicationHistoryPage() {
                 </section>
 
                 <div className="w-full xl:w-[300px] xl:shrink-0">
-                    <ClaimSidePanel onAction={(action) => message.info(action.label)} />
+                    <ClaimSidePanel claim={claim} onAction={comm.onAction} canAct={can(MODULES.communication, 'create')} />
                 </div>
             </div>
+            {comm.modal}
         </div>
     );
 }

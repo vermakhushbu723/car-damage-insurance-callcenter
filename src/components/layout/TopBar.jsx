@@ -1,8 +1,10 @@
-import { Avatar } from 'antd';
+import { Avatar, Tooltip } from 'antd';
 import { LogoutOutlined, MenuOutlined, UserOutlined } from '@ant-design/icons';
 import { NavLink, useNavigate } from 'react-router-dom';
 
-import { CURRENT_USER, TOP_NAV_ITEMS } from '../../constants/navigation.js';
+import { TOP_NAV_ITEMS } from '../../constants/navigation.js';
+import { logout } from '../../auth/session.js';
+import { useAppState } from '../../context/AppContext.jsx';
 import Logo from '../common/Logo.jsx';
 
 function NavPill({ item }) {
@@ -23,6 +25,12 @@ function NavPill({ item }) {
 /** Blue application bar that sits above the rail. */
 export default function TopBar({ onMenuClick }) {
     const navigate = useNavigate();
+    const { user } = useAppState();
+
+    const signOut = () => {
+        logout();
+        navigate('/login', { replace: true });
+    };
 
     return (
         <header className="sticky top-0 z-40 bg-[#83a2e3]">
@@ -50,16 +58,20 @@ export default function TopBar({ onMenuClick }) {
                     <button
                         type="button"
                         aria-label="Logout"
+                        title="Logout"
+                        onClick={signOut}
                         className="hidden h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#1450d8] transition hover:bg-white sm:flex"
                     >
                         <LogoutOutlined />
                     </button>
-                    <div className="flex items-center gap-2 text-white">
-                        <Avatar size={28} icon={<UserOutlined />} className="bg-white/85 !text-[#1450d8]" />
-                        <span className="hidden pr-2 text-[12.5px] font-semibold whitespace-nowrap sm:inline">
-                            {CURRENT_USER.name}
-                        </span>
-                    </div>
+                    <Tooltip title={user ? `${user.roleName}${user.agentCode ? ` · ${user.agentCode}` : ''} · ${user.userId}` : ''}>
+                        <div className="flex items-center gap-2 text-white">
+                            <Avatar size={28} icon={<UserOutlined />} className="bg-white/85 !text-[#1450d8]" />
+                            <span className="hidden pr-2 text-[12.5px] font-semibold whitespace-nowrap sm:inline">
+                                {user?.name ?? 'User'}
+                            </span>
+                        </div>
+                    </Tooltip>
                 </div>
             </div>
         </header>

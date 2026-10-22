@@ -72,16 +72,7 @@ export const SEND_VIA_CHANNELS = [
     { key: 'whatsapp', label: 'WhatsApp', icon: 'whatsapp', checked: false },
 ];
 
-export const CONTACT_DETAILS = [
-    { key: 'mobile', label: 'Mobile No.', value: '9876543210' },
-    { key: 'email', label: 'Email ID', value: 'amit.verma@email.com' },
-];
-
-/** No letter has been issued for this claim yet. */
-export const LETTER_HISTORY = [];
-
 export const LETTER_META = {
-    letterNo: 'LET-250501-045',
     title: 'LETTER FOR INFORMATION / DOCUMENTS REQUIRED',
     team: 'Claims Team',
     sender: 'Ibima Assist',
@@ -91,17 +82,17 @@ export const LETTER_META = {
 export const REMARKS_LIMIT = 200;
 export const INSTRUCTIONS_LIMIT = 150;
 
-export const DEFAULT_LETTER_FORM = {
+/** Fresh letter form: issued today, response due in 7 days. */
+export const defaultLetterForm = (today) => ({
     letterType: 'vehicle-not-in-workshop',
     requestingOn: 'intimation-stage',
     priority: 'high',
-    issueDate: '2025-05-01',
-    responseDueBy: '2025-05-08',
-    responseDueDays: 7,
+    issueDate: today,
+    responseDueBy: today.add(7, 'day'),
     reason: 'vehicle-not-in-workshop',
-    remarks: 'As per telephonic discussion, the vehicle is not available at any workshop. Please provide details.',
+    remarks: '',
     instructions: 'Please share the details at the earliest to avoid delay in claim process.',
-};
+});
 
 /** Label lookup used by the preview. */
 export const labelOf = (options, value) => options.find((option) => option.value === value)?.label || '';

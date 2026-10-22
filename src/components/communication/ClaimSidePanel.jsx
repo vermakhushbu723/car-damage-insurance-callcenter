@@ -1,6 +1,6 @@
 import { RightOutlined } from '@ant-design/icons';
 
-import { CLAIM_NOTE, CLAIM_SUMMARY_ROWS, QUICK_ACTIONS } from '../../data/claimData.js';
+import { CLAIM_NOTE, claimSummaryRows, QUICK_ACTIONS } from '../../data/claimData.js';
 import { getIcon } from '../common/iconRegistry.jsx';
 import cn from '../../utils/cn.js';
 
@@ -21,12 +21,12 @@ function Panel({ title, children }) {
 }
 
 /** Claim summary + note + quick actions rail. */
-export default function ClaimSidePanel({ onAction }) {
+export default function ClaimSidePanel({ claim, onAction, canAct = true }) {
     return (
         <div className="flex flex-col gap-4">
             <Panel title="Claim Summary">
                 <dl className="space-y-2.5">
-                    {CLAIM_SUMMARY_ROWS.map((row) => (
+                    {claimSummaryRows(claim).map((row) => (
                         <div key={row.key} className="flex items-center justify-between gap-3">
                             <dt className="text-[11px] text-slate-500">{row.label}</dt>
                             <dd
@@ -55,7 +55,7 @@ export default function ClaimSidePanel({ onAction }) {
 
             <Panel title="Quick Actions">
                 <div className="flex flex-col gap-2">
-                    {QUICK_ACTIONS.map((action) => {
+                    {QUICK_ACTIONS.filter((a) => canAct || a.key === 'issue-letter').map((action) => {
                         const Icon = getIcon(action.icon);
                         return (
                             <button

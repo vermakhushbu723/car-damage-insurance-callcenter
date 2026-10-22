@@ -60,13 +60,13 @@ function DescriptionCell({ row }) {
                         </span>
                         <span className="block text-[10px] text-slate-500">{row.attachment.size}</span>
                     </span>
-                    <button
-                        type="button"
+                    <a
+                        href={row.attachment.url ? `${row.attachment.url}&download=1` : undefined}
                         aria-label={`Download ${row.attachment.name}`}
                         className="flex h-6 w-6 items-center justify-center rounded-md bg-[#1450d8] text-[10.5px] text-white"
                     >
                         <DownloadOutlined />
-                    </button>
+                    </a>
                 </div>
             ) : null}
         </div>

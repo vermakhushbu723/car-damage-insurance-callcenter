@@ -3,15 +3,16 @@ import { Tooltip } from 'antd';
 import { CloseOutlined, DownOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { SIDE_NAV_ITEMS } from '../../constants/navigation.js';
+import { navForUser } from '../../constants/navigation.js';
+import { useAppState } from '../../context/AppContext.jsx';
 import cn from '../../utils/cn.js';
 
 export const SIDEBAR_WIDTH = 208;
 export const SIDEBAR_COLLAPSED_WIDTH = 60;
 
 /** Which group should start open for the current path. */
-const groupForPath = (pathname) =>
-    SIDE_NAV_ITEMS.filter((item) => item.children?.some((child) => pathname.startsWith(child.path))).map(
+const groupForPath = (items, pathname) =>
+    items.filter((item) => item.children?.some((child) => pathname.startsWith(child.path))).map(
         (item) => item.key
     );
 
@@ -22,8 +23,10 @@ const groupForPath = (pathname) =>
 export default function Sidebar({ onNavigate, onClose, collapsed = false }) {
     const location = useLocation();
     const navigate = useNavigate();
+    const { can } = useAppState();
+    const items = navForUser((module) => can(module));
     const [openKeys, setOpenKeys] = useState(() => {
-        const active = groupForPath(location.pathname);
+        const active = groupForPath(items, location.pathname);
         return active.length ? active : ['my-claims'];
     });
 
@@ -73,7 +76,7 @@ export default function Sidebar({ onNavigate, onClose, collapsed = false }) {
             ) : null}
 
             <nav className={cn('flex-1 overflow-x-hidden overflow-y-auto py-2', collapsed ? 'px-2' : 'px-0')}>
-                {SIDE_NAV_ITEMS.map((item) => {
+                {items.map((item) => {
                     const Icon = item.icon;
                     const active = isActive(item);
                     const expanded = openKeys.includes(item.key);

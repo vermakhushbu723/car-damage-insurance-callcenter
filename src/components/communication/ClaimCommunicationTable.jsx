@@ -1,6 +1,7 @@
 import { Table } from 'antd';
 import { DownloadOutlined, FileAddOutlined } from '@ant-design/icons';
 
+import { STATUS_TONES } from '../../data/communicationData.js';
 import cn from '../../utils/cn.js';
 
 /** The blue header band is what sets this table apart from the other design. */
@@ -59,13 +60,13 @@ function DescriptionCell({ row }) {
                         </span>
                         <span className="block text-[10px] text-slate-500">{row.attachment.size}</span>
                     </span>
-                    <button
-                        type="button"
+                    <a
+                        href={row.attachment.url ? `${row.attachment.url}&download=1` : undefined}
                         aria-label={`Download ${row.attachment.name}`}
                         className="ml-1 text-[11.5px] text-slate-700"
                     >
                         <DownloadOutlined />
-                    </button>
+                    </a>
                 </div>
             ) : null}
         </div>
@@ -110,7 +111,7 @@ export default function ClaimCommunicationTable({ rows }) {
             key: 'status',
             align: 'center',
             render: (value) => (
-                <span className="inline-flex rounded-full border border-emerald-400 bg-emerald-50 px-5 py-1.5 text-[11.5px] font-semibold text-emerald-600">
+                <span className={cn('inline-flex rounded-full border px-5 py-1.5 text-[11.5px] font-semibold', STATUS_TONES[value] ?? STATUS_TONES.Pending)}>
                     {value}
                 </span>
             ),

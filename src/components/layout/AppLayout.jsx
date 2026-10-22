@@ -37,7 +37,7 @@ export default function AppLayout() {
 
             <Drawer
                 placement="left"
-                width={SIDEBAR_WIDTH}
+                size={SIDEBAR_WIDTH}
                 open={drawerOpen}
                 onClose={() => setDrawerOpen(false)}
                 closable={false}

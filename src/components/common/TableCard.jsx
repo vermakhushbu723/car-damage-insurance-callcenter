@@ -12,6 +12,7 @@ export default function TableCard({
     page = 1,
     totalPages = 1,
     onPageChange,
+    loading = false,
 }) {
     return (
         <section className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-[0_1px_3px_rgba(16,24,40,0.05)]">
@@ -27,6 +28,7 @@ export default function TableCard({
                 pagination={false}
                 scroll={{ x: 'max-content' }}
                 size="middle"
+                loading={loading}
             />
 
             <Pager current={page} total={totalPages} onChange={onPageChange} />

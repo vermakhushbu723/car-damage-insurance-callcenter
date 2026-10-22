@@ -1,4 +1,4 @@
-import { AI_INSIGHT_DONUTS, AI_INSIGHT_ROWS } from '../../data/ilaData.js';
+import { DONUT_TONES } from '../../data/ilaData.js';
 import cn from '../../utils/cn.js';
 
 /** Simple SVG ring gauge – no chart library needed for a single value. */
@@ -35,7 +35,7 @@ function Donut({ value, tone, display }) {
 }
 
 /** Model diagnostics panel next to the survey viewer. */
-export default function AiInsightsCard({ donuts = AI_INSIGHT_DONUTS, rows = AI_INSIGHT_ROWS }) {
+export default function AiInsightsCard({ donuts = [], rows = [] }) {
     return (
         <section className="rounded-xl border border-slate-200 bg-white px-4 py-4">
             <h3 className="mb-0.5 text-[13px] font-bold text-[#1450d8]">AI Assessment Insights</h3>
@@ -47,7 +47,7 @@ export default function AiInsightsCard({ donuts = AI_INSIGHT_DONUTS, rows = AI_I
                         key={donut.key}
                         className="flex items-center gap-2 rounded-lg border border-slate-200 px-2.5 py-2.5"
                     >
-                        <Donut value={donut.value} tone={donut.tone} display={donut.display} />
+                        <Donut value={donut.value} tone={DONUT_TONES[donut.key] ?? '#1450d8'} display={donut.display} />
                         <span className="min-w-0">
                             <span className="block text-[9px] leading-tight font-semibold tracking-wider text-slate-500 uppercase">
                                 {donut.label}

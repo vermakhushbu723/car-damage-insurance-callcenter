@@ -5,7 +5,7 @@ import { LogoMark } from '../common/Logo.jsx';
  * The printable letter. Everything on it is derived from the form state,
  * so the preview and the letter that gets issued can never disagree.
  */
-export default function LetterPreview({ claim, letter, issueDate, instructions }) {
+export default function LetterPreview({ claim, letter, letterNo, issueDate, instructions }) {
     return (
         <article className="rounded-lg border border-slate-200 bg-white px-6 py-5 text-slate-800">
             <header className="mb-5 flex items-start justify-between gap-4">
@@ -18,7 +18,7 @@ export default function LetterPreview({ claim, letter, issueDate, instructions }
                 </div>
                 <div className="text-right text-[10px] text-slate-600">
                     <p className="mb-0.5">
-                        <span className="font-semibold">Letter No.:</span> {LETTER_META.letterNo}
+                        <span className="font-semibold">Letter No.:</span> {letterNo}
                     </p>
                     <p className="mb-0">
                         <span className="font-semibold">Date:</span> {issueDate}
