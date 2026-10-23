@@ -27,6 +27,7 @@ import { useAppState } from '../../context/AppContext.jsx';
 import ROUTES from '../../constants/routes.js';
 import { errText, fmtDate, fmtDateTime, fmtShort, formatINR } from '../../utils/format.js';
 import cn from '../../utils/cn.js';
+import ClaimPicker from './ClaimPicker.jsx';
 
 const META_ICONS = {
     clock: ClockCircleOutlined,
@@ -387,14 +388,17 @@ function ClaimActionBar({ claim }) {
 }
 
 /** Shown on a claim screen while no claim is open. */
-export function NoClaim({ text = 'Open a claim from the Dashboard (click its Claim ID) to work on it here.' }) {
+export function NoClaim({ text = 'Select a claim to work on it here (or open one from the Dashboard / All Claims).', stage }) {
     const navigate = useNavigate();
     return (
-        <section className="rounded-xl border border-slate-200 bg-white px-6 py-14 text-center">
+        <section className="flex flex-col items-center rounded-xl border border-slate-200 bg-white px-6 py-14 text-center">
             <Empty description={text} />
-            <Button type="primary" className="!mt-3" onClick={() => navigate(ROUTES.dashboard)}>
-                Go To Dashboard
-            </Button>
+            <div className="mt-3 flex flex-wrap justify-center gap-3">
+                <ClaimPicker stage={stage} />
+                <Button type="primary" onClick={() => navigate(ROUTES.allClaims)}>
+                    All Claims
+                </Button>
+            </div>
         </section>
     );
 }
@@ -437,7 +441,8 @@ export default function ClaimShell({
                     <h1 className="mb-0.5 text-[20px] leading-7 font-bold text-[#1450d8]">{title}</h1>
                     {subtitle ? <p className="mb-0 text-[13.5px] font-bold text-slate-900">{subtitle}</p> : null}
                 </div>
-                <div className="flex shrink-0 gap-3">
+                <div className="flex shrink-0 flex-wrap gap-3">
+                    {useActiveClaim ? <ClaimPicker stage={stage} /> : null}
                     <Button onClick={() => navigate(claim ? ROUTES.claimDetails : ROUTES.dashboard)}>Back To Claim</Button>
                     <Button type="primary" className="!px-8" loading={nextLoading} onClick={onNext || goNext}>
                         Next
@@ -450,7 +455,7 @@ export default function ClaimShell({
             <ClaimStageTracker claim={claim} />
             <ClaimActionBar claim={claim} />
 
-            {requireClaim && !claim ? claimLoading ? <Spin className="!py-10" /> : <NoClaim /> : children}
+            {requireClaim && !claim ? claimLoading ? <Spin className="!py-10" /> : <NoClaim stage={stage} /> : children}
         </div>
     );
 }

@@ -18,6 +18,7 @@ import {
 import LetterPreview from '../../components/letters/LetterPreview.jsx';
 import SectionCard from '../../components/common/SectionCard.jsx';
 import { NoClaim } from '../../components/claim/ClaimShell.jsx';
+import ClaimPicker from '../../components/claim/ClaimPicker.jsx';
 import { api, download } from '../../api/client.js';
 import { useAppState } from '../../context/AppContext.jsx';
 import { MODULES } from '../../constants/navigation.js';
@@ -164,6 +165,10 @@ export default function IssueLetterPage() {
 
     return (
         <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
+            <div className="flex items-center justify-between gap-3 xl:col-span-2">
+                <h1 className="mb-0 text-[20px] leading-7 font-bold text-[#1450d8]">Issue Letter</h1>
+                <ClaimPicker />
+            </div>
             <div className="flex flex-col gap-5">
                 <SectionCard step={1} title="Letter Details">
                     <Label>Letter Type</Label>

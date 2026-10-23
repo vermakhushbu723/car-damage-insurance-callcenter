@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import AppLayout from '../components/layout/AppLayout.jsx';
 import DashboardPage from '../pages/dashboard/DashboardPage.jsx';
 import AnalyticsPage from '../pages/dashboard/AnalyticsPage.jsx';
+import ClaimsListPage from '../pages/claims/ClaimsListPage.jsx';
 import IntimationPage from '../pages/intimation/IntimationPage.jsx';
 import HandlerAllocationPage from '../pages/claims/HandlerAllocationPage.jsx';
 import SurveyorAssignmentPage from '../pages/claims/SurveyorAssignmentPage.jsx';
@@ -33,6 +34,8 @@ const PAGES = {
     [ROUTES.handlerIla]: <LiabilityAssessmentPage kind="liability" />,
     [ROUTES.flaPending]: <LiabilityAssessmentPage kind="fla" />,
     [ROUTES.analytics]: <AnalyticsPage />,
+    [ROUTES.allClaims]: <ClaimsListPage mode="all" />,
+    [ROUTES.newAssigned]: <ClaimsListPage mode="mine" />,
     [ROUTES.paymentRecommendation]: <PaymentRecommendationPage />,
     [ROUTES.surveyPaybill]: <SurveyPaybillPage />,
     [ROUTES.issueLetter]: <IssueLetterPage />,

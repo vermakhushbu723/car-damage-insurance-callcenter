@@ -7,6 +7,7 @@ import ClaimCommunicationTable from '../../components/communication/ClaimCommuni
 import ClaimSummaryCard from '../../components/communication/ClaimSummaryCard.jsx';
 import useCommunications, { COMMUNICATION_FILTERS, buildStats } from '../../components/communication/useCommunications.jsx';
 import { NoClaim } from '../../components/claim/ClaimShell.jsx';
+import ClaimPicker from '../../components/claim/ClaimPicker.jsx';
 import Pager from '../../components/common/Pager.jsx';
 import { useAppState } from '../../context/AppContext.jsx';
 import { MODULES } from '../../constants/navigation.js';
@@ -56,6 +57,9 @@ export default function ClaimCommunicationPage() {
         <div className="flex flex-col gap-5">
             <header className="flex flex-col gap-3 lg:grid lg:grid-cols-3 lg:items-start">
                 <h1 className="mb-0 text-[18px] leading-6 font-bold text-[#1450d8]">Communication History</h1>
+                <div className="lg:order-last lg:text-right">
+                    <ClaimPicker />
+                </div>
                 <div className="lg:text-center">
                     <p className="mb-1 text-[14.5px] leading-6 font-bold text-slate-900">
                         <span className="text-[#1450d8]">Claim ID:</span> {claim.claimNo}

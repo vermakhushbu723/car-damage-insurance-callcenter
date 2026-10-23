@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { DMS_TABS, DOCUMENT_TYPES } from '../../data/documentsData.js';
 import { getIcon } from '../../components/common/iconRegistry.jsx';
 import { NoClaim } from '../../components/claim/ClaimShell.jsx';
+import ClaimPicker from '../../components/claim/ClaimPicker.jsx';
 import useClaimDocuments, { pickFiles } from '../../hooks/useClaimDocuments.js';
 import { api, download, fileUrl } from '../../api/client.js';
 import dayjs from 'dayjs';
@@ -101,6 +102,9 @@ export default function DocumentsDmsPage() {
                 >
                     <ArrowLeftOutlined /> Back
                 </button>
+                <span className="ml-auto order-last">
+                    <ClaimPicker className="w-[260px]" />
+                </span>
                 {bar.map((item) => (
                     <span key={item.key} className="border-l border-slate-300 pl-6 text-[13px] font-semibold text-slate-800">
                         {item.label ? `${item.label}: ` : ''}

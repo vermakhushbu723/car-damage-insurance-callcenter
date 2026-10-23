@@ -7,6 +7,7 @@ import CommunicationTable from '../../components/communication/CommunicationTabl
 import ClaimSidePanel from '../../components/communication/ClaimSidePanel.jsx';
 import useCommunications, { COMMUNICATION_FILTERS, buildStats } from '../../components/communication/useCommunications.jsx';
 import { NoClaim } from '../../components/claim/ClaimShell.jsx';
+import ClaimPicker from '../../components/claim/ClaimPicker.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
 import { useAppState } from '../../context/AppContext.jsx';
 import { MODULES } from '../../constants/navigation.js';
@@ -75,6 +76,7 @@ export default function CommunicationHistoryPage() {
                     </div>
                 </div>
 
+                <ClaimPicker />
                 <Button icon={<DownloadOutlined />} disabled={!can(MODULES.communication, 'download')} onClick={comm.exportCsv} className="w-fit">
                     Export History
                 </Button>
