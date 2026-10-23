@@ -109,6 +109,7 @@ export default function IntimationPage() {
         const body = { intimation: toApi(values), link: linkSettings() };
         const saved = editing ? await api.patch(`/claims/${editing.id}`, body) : await api.post('/claims', body);
         loadedFor.current = saved.id; // the form already shows what was saved
+        setLink((l) => ({ ...l, uniqueId: saved.link?.uniqueId ?? l.uniqueId }));
         selectClaim(saved.id, saved);
         if (isNew) {
             setIsNew(false);
@@ -218,6 +219,16 @@ export default function IntimationPage() {
                             onSend={onSendLink}
                             sending={busy === 'link'}
                             onAutoReminder={onAutoReminder}
+                            refreshingId={busy === 'uid'}
+                            onRefreshId={() =>
+                                run('uid', async () => {
+                                    const saved = editing ?? (await save());
+                                    const res = await api.post(`/claims/${saved.id}/unique-id`);
+                                    setLink((l) => ({ ...l, uniqueId: res.uniqueId }));
+                                    setClaim(res.claim);
+                                    message.success(`Unique ID ${res.uniqueId}`);
+                                })
+                            }
                         />
 
                         <div className="grid grid-cols-1 gap-4 pb-2 sm:grid-cols-2">

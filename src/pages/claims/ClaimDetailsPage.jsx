@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { App, Button, Spin, Switch } from 'antd';
-import { CarOutlined, CloseOutlined, LeftOutlined, RightOutlined, SaveOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, CarOutlined, CloseOutlined, FileTextOutlined, LeftOutlined, RightOutlined, SaveOutlined, ThunderboltOutlined, UserOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 
 import { CLAIM_DETAIL_SECTIONS, CLAIM_DETAIL_TABS } from '../../data/claimDetailsData.js';
 import ClaimShell from '../../components/claim/ClaimShell.jsx';
+import ClaimInfoSection from '../../components/claim/ClaimInfoSection.jsx';
+import { formatINR } from '../../utils/format.js';
 import DocumentViewer from '../../components/claim/DocumentViewer.jsx';
 import DynamicField from '../../components/intimation/DynamicField.jsx';
 import DmsDocumentsPanel from '../../components/intimation/DmsDocumentsPanel.jsx';
@@ -25,6 +27,52 @@ const MOMENT_FIELDS = new Set(
 );
 const toForm = (v = {}) => Object.fromEntries(Object.entries(v).map(([k, x]) => [k, MOMENT_FIELDS.has(k) && x ? dayjs(x) : x]));
 const toApi = (v) => Object.fromEntries(Object.entries(v).map(([k, x]) => [k, dayjs.isDayjs(x) ? x.toISOString() : x]));
+
+const TAB_ICONS = { car: CarOutlined, user: UserOutlined, file: FileTextOutlined, grid: AppstoreOutlined, sparkle: ThunderboltOutlined };
+
+/** AI Assessment tab: the AI ILA findings of this claim (read-only; edited on the AI ILA screen). */
+function AiAssessmentTab({ claimId, onOpen }) {
+    const [data, setData] = useState(undefined);
+    useEffect(() => {
+        if (!claimId) return;
+        api.get(`/claims/${claimId}/ai-ila`)
+            .then(setData)
+            .catch(() => setData(null));
+    }, [claimId]);
+    if (data === undefined) return <Spin />;
+    if (data === null) return <p className="mb-0 text-[11px] text-slate-500">Your role cannot view the AI assessment.</p>;
+    return (
+        <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap justify-between gap-2 rounded-lg bg-[#f3f5f9] px-3 py-2 text-[11px]">
+                <span>
+                    AI: <b>{data.ai.status === 'done' ? 'Assessed' : data.ai.configured ? 'Not run yet' : 'Not connected'}</b>
+                    {data.review.decision ? ` · ${data.review.decision}` : ''}
+                </span>
+                <span>
+                    Estimate <b>₹{formatINR(data.summary.total)}</b>
+                </span>
+            </div>
+            {data.rows.length ? (
+                data.rows.map((r) => (
+                    <div key={r.id} className="flex items-center justify-between gap-2 border-b border-slate-100 pb-1.5 text-[11px]">
+                        <span>
+                            <span className="font-semibold text-slate-900">{r.part}</span>
+                            <span className="block text-[10px] text-slate-500">
+                                {r.damageType} · {r.severity} · {r.action} · {r.status}
+                            </span>
+                        </span>
+                        <span className="font-semibold text-slate-800">₹{formatINR(r.cost)}</span>
+                    </div>
+                ))
+            ) : (
+                <p className="mb-0 text-[11px] text-slate-500">No damages assessed yet.</p>
+            )}
+            <Button size="small" onClick={onOpen} className="!mt-1 w-fit !text-[#1450d8]">
+                Open AI ILA
+            </Button>
+        </div>
+    );
+}
 
 export default function ClaimDetailsPage() {
     const { message } = App.useApp();
@@ -76,6 +124,7 @@ export default function ClaimDetailsPage() {
     };
 
     const files = docs.state?.files ?? [];
+    const docsByType = Object.fromEntries((docs.state?.types ?? []).filter((t) => t.latest).map((t) => [t.type, t.latest]));
 
     return (
         <ClaimShell
@@ -85,7 +134,7 @@ export default function ClaimDetailsPage() {
             onNext={canEdit ? () => save(true) : undefined}
             nextLoading={busy === 'next'}
         >
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[330px_minmax(0,1fr)_260px]">
+            <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[330px_minmax(0,1fr)_260px]">
                 <section className="rounded-xl border border-slate-200 bg-white px-4 py-4">
                     <header className="mb-3 flex items-center justify-between gap-3">
                         <h3 className="mb-0 text-[14px] font-bold text-slate-900">Claim Details</h3>
@@ -115,7 +164,10 @@ export default function ClaimDetailsPage() {
                                     item.key === tab ? 'border-b-2 border-[#1450d8] text-[#1450d8]' : 'text-slate-500 hover:text-slate-800'
                                 )}
                             >
-                                <CarOutlined className="text-[10.5px]" />
+                                {(() => {
+                                    const Icon = TAB_ICONS[item.icon] ?? CarOutlined;
+                                    return <Icon className="text-[10.5px]" />;
+                                })()}
                                 {item.label}
                             </button>
                         ))}
@@ -126,13 +178,20 @@ export default function ClaimDetailsPage() {
                         <h4 className="mb-0 text-[12px] font-bold text-slate-900">{section.title}</h4>
                     </div>
 
-                    {saved === null ? (
+                    {tab === 'ai' ? (
+                        <AiAssessmentTab claimId={claim?.id} onOpen={() => navigate(ROUTES.aiIla)} />
+                    ) : saved === null ? (
                         <Spin />
                     ) : (
                         <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
                             {section.fields.map((field) => (
                                 <div key={field.name} className={field.full ? 'sm:col-span-2' : ''}>
-                                    <DynamicField field={{ ...field, disabled: !editMode || !canEdit }} value={values[field.name]} onChange={handleChange} />
+                                    <DynamicField
+                                        field={{ ...field, disabled: !editMode || !canEdit }}
+                                        value={values[field.name]}
+                                        onChange={handleChange}
+                                        documents={docsByType}
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -164,6 +223,8 @@ export default function ClaimDetailsPage() {
                     }}
                 />
             </div>
+
+            <ClaimInfoSection claimId={claim?.id} canEdit={canEdit} files={files} />
         </ClaimShell>
     );
 }

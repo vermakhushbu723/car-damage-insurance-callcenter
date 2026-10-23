@@ -59,7 +59,17 @@ function ComputationCard({ title, table, open, onViewAll }) {
     );
 }
 
-export default function LiabilityAssessmentPage() {
+/**
+ * kind 'liability' = HANDLER ILA (the handler's assessment, seeded from AI ILA),
+ * kind 'fla' = FLA (final loss assessment, seeded from the Handler ILA). Same screen.
+ */
+const KIND = {
+    liability: { title: 'HANDLER ILA', module: MODULES.handlerIla, file: 'Handler-ILA', next: ROUTES.flaPending, nextLabel: 'FLA' },
+    fla: { title: 'FLA', module: MODULES.fla, file: 'FLA', next: ROUTES.paymentRecommendation, nextLabel: 'Payment Recommendation' },
+};
+
+export default function LiabilityAssessmentPage({ kind = 'liability' }) {
+    const K = KIND[kind];
     const { message, modal } = App.useApp();
     const navigate = useNavigate();
     const { claim, reloadClaim, can } = useAppState();
@@ -69,7 +79,7 @@ export default function LiabilityAssessmentPage() {
     const [filters, setFilters] = useState({ part: '', material: undefined, action: undefined, allowed: undefined, remarks: '' });
     const timers = useRef({});
 
-    const base = claim ? `/claims/${claim.id}/liability` : null;
+    const base = claim ? `/claims/${claim.id}/${kind}` : null;
 
     useEffect(() => {
         if (!base || claim?.status === 'Draft') return;
@@ -79,7 +89,7 @@ export default function LiabilityAssessmentPage() {
     }, [base, claim?.status, message]);
 
     const locked = data?.status === 'Submitted';
-    const canEdit = can(MODULES.handlerIla, 'edit') && claim?.status === 'Open' && !locked;
+    const canEdit = can(K.module, 'edit') && claim?.status === 'Open' && !locked;
 
     const visible = (data?.parts ?? []).filter((row) => {
         if (filters.part && !row.part.toLowerCase().includes(filters.part.toLowerCase())) return false;
@@ -133,7 +143,7 @@ export default function LiabilityAssessmentPage() {
     const generate = async () => {
         setBusy('report');
         try {
-            await download(`${base}/report`, `Liability-${claim.claimNo}.pdf`, { method: 'POST', body: {} });
+            await download(`${base}/report`, `${K.file}-${claim.claimNo}.pdf`, { method: 'POST', body: {} });
             message.success('Report generated');
             setData(await api.get(base));
         } catch (err) {
@@ -145,14 +155,14 @@ export default function LiabilityAssessmentPage() {
 
     const submit = () =>
         modal.confirm({
-            title: 'Submit the liability report?',
+            title: `Submit the ${K.title} report?`,
             content: `Net liability ₹${formatINR(data.totals.netLiability)} becomes the claim amount; the report can no longer be changed.`,
             onOk: async () => {
                 try {
                     setData(await api.post(`${base}/submit`));
                     await reloadClaim();
                     message.success('Report submitted');
-                    navigate(ROUTES.paymentRecommendation);
+                    navigate(K.next);
                 } catch (err) {
                     message.error(errText(err));
                 }
@@ -220,21 +230,21 @@ export default function LiabilityAssessmentPage() {
 
     if (claim?.status === 'Draft') {
         return (
-            <ClaimShell title="ILA" subtitle="Intelligent Liability Assessment" stage="fla">
+            <ClaimShell title={K.title} subtitle="Intelligent Liability Assessment" stage="fla">
                 <p className="text-[12px] text-slate-600">Submit the intimation first.</p>
             </ClaimShell>
         );
     }
 
     return (
-        <ClaimShell title="ILA" subtitle="Intelligent Liability Assessment" stage="fla">
+        <ClaimShell title={K.title} subtitle="Intelligent Liability Assessment" stage="fla" onNext={() => navigate(K.next)}>
             {!data ? (
                 <Spin className="!py-10" />
             ) : (
                 <>
                     {data.seeded ? (
                         <p className="mb-0 rounded-lg bg-blue-50 px-4 py-2 text-[11.5px] text-[#1450d8]">
-                            Parts are taken from the AI ILA assessment. Check material, prices and allowed / disallowed before submitting.
+                            Parts are taken from the {data.seededFrom ?? 'AI ILA'} assessment. Check material, prices and allowed / disallowed before submitting.
                         </p>
                     ) : null}
                     {locked ? (

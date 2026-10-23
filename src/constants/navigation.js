@@ -85,6 +85,7 @@ export const SIDE_NAV_ITEMS = [
 
 /** Reachable from the claim action bar rather than the rail. */
 export const EXTRA_ROUTES = [
+    { key: 'analytics', label: 'Call Center / CSM Dashboard', path: ROUTES.analytics, module: M.dashboard },
     { key: 'communication-history', label: 'Communication History', path: ROUTES.communicationHistory, module: M.communication },
 ];
 

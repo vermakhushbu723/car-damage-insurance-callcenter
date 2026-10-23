@@ -243,7 +243,7 @@ export default function PaymentRecommendationPage() {
                 <>
                     {!s.flaDone ? (
                         <p className="mb-0 rounded-lg bg-amber-50 px-4 py-2 text-[11.5px] text-amber-700">
-                            Net payable is set once the Handler ILA (liability) report is submitted.
+                            Net payable is set once the FLA report is submitted.
                         </p>
                     ) : null}
                     <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">

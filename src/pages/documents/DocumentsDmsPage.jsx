@@ -20,7 +20,8 @@ import { DMS_TABS, DOCUMENT_TYPES } from '../../data/documentsData.js';
 import { getIcon } from '../../components/common/iconRegistry.jsx';
 import { NoClaim } from '../../components/claim/ClaimShell.jsx';
 import useClaimDocuments, { pickFiles } from '../../hooks/useClaimDocuments.js';
-import { api, fileUrl } from '../../api/client.js';
+import { api, download, fileUrl } from '../../api/client.js';
+import dayjs from 'dayjs';
 import { useAppState } from '../../context/AppContext.jsx';
 import { MODULES } from '../../constants/navigation.js';
 import ROUTES from '../../constants/routes.js';
@@ -43,6 +44,7 @@ export default function DocumentsDmsPage() {
     const [tab, setTab] = useState('documents');
     const [dropType, setDropType] = useState('other');
     const [processing, setProcessing] = useState(false);
+    const [busy, setBusy] = useState(null);
     const docs = useClaimDocuments(claim?.id);
 
     if (!claim) return <NoClaim />;
@@ -54,6 +56,18 @@ export default function DocumentsDmsPage() {
     const uploadType = async (type, multiple = false) => {
         const picked = await pickFiles({ multiple });
         for (const f of picked) await docs.upload(type, f);
+    };
+
+    const bundle = async (kind) => {
+        setBusy(kind);
+        try {
+            await download(`/claims/${claim.id}/documents/download.${kind}`, `Documents-${claim.claimNo}.${kind}`);
+            message.success(kind === 'zip' ? 'ZIP downloaded' : 'PDF downloaded');
+        } catch (err) {
+            message.error(errText(err));
+        } finally {
+            setBusy(null);
+        }
     };
 
     const process = async () => {
@@ -116,7 +130,7 @@ export default function DocumentsDmsPage() {
 
             {tab === 'documents' ? (
                 <>
-                    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
+                    <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
                         <div>
                             <h2 className="mb-1 text-[14.5px] font-bold text-[#1450d8]">Upload Documents</h2>
                             <p className="mb-3 text-[12.5px] font-semibold text-slate-800">Upload Requerd Documents For This Claim</p>
@@ -160,55 +174,70 @@ export default function DocumentsDmsPage() {
                                     const status = t?.status ?? 'none';
                                     const multi = doc.type === 'vehicle-photos' || doc.type === 'other' || doc.type === 'surveyor-report';
                                     return (
-                                        <div key={doc.key} className="rounded-xl border border-slate-200 bg-white px-4 py-4">
-                                            <div className="mb-3 flex items-center gap-3">
-                                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#dce6fb] text-[13px] text-[#1450d8]">
+                                        <div key={doc.key} className="flex flex-col rounded-xl border border-slate-200 bg-white px-3 py-3">
+                                            <div className="mb-2 flex items-start gap-3">
+                                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#dce6fb] text-[13px] text-[#1450d8]">
                                                     <Icon />
                                                 </span>
-                                                <span className="min-w-0">
-                                                    <span className="block text-[12px] font-bold text-[#1450d8]">
+                                                <span className="min-w-0 flex-1">
+                                                    <span className="block text-[11.5px] font-bold text-[#1450d8]">
                                                         {doc.code}
                                                         {t?.count > 1 ? ` (${t.count})` : ''}
                                                     </span>
-                                                    <span className="block text-[11.5px] text-slate-700">{doc.label}</span>
+                                                    <span className="block text-[11.5px] text-slate-800">{doc.label}</span>
                                                 </span>
+                                                {status !== 'none' ? (
+                                                    <span
+                                                        className={cn(
+                                                            'inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold',
+                                                            status === 'uploaded' ? 'bg-emerald-100 text-emerald-600' : 'bg-orange-100 text-orange-600'
+                                                        )}
+                                                    >
+                                                        {status === 'uploaded' ? <CheckCircleOutlined /> : <LoadingOutlined />}
+                                                        {status === 'uploaded' ? 'Uploaded' : 'Pending'}
+                                                    </span>
+                                                ) : null}
                                             </div>
 
-                                            {status !== 'none' ? (
-                                                <span
-                                                    className={cn(
-                                                        'mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold',
-                                                        status === 'uploaded' ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-600'
-                                                    )}
-                                                >
-                                                    {status === 'uploaded' ? <CheckCircleOutlined /> : <LoadingOutlined />}
-                                                    {status === 'uploaded' ? 'Uploaded' : 'Pending'}
-                                                </span>
-                                            ) : null}
-
                                             {t?.latest ? (
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <a
-                                                        href={`${fileUrl(t.latest.url)}&download=1`}
-                                                        className="flex items-center justify-center gap-1.5 rounded-md bg-[#c6d5f5] py-2 text-[11.5px] font-medium text-[#1450d8]"
-                                                    >
-                                                        <DownloadOutlined /> Download
+                                                <div className="group relative mt-auto grid grid-cols-[1fr_auto] gap-2 rounded-md bg-[#c6d5f5] px-2.5 py-2 text-[10.5px] text-slate-600">
+                                                    <a href={fileUrl(t.latest.url)} target="_blank" rel="noreferrer" className="min-w-0 border-r border-slate-400/50 pr-2 text-slate-600 hover:text-[#1450d8]">
+                                                        <span className="block">Uploaded By</span>
+                                                        <span className="block truncate">
+                                                            <b className="text-slate-800">{t.latest.uploadedBy ?? '—'}</b>
+                                                            {t.latest.uploadedById ? ` (ID:${t.latest.uploadedById})` : ''}
+                                                        </span>
                                                     </a>
-                                                    <button
-                                                        type="button"
-                                                        disabled={!canUpload}
-                                                        onClick={() => uploadType(doc.type, multi)}
-                                                        className="flex items-center justify-center gap-1.5 rounded-md bg-[#c6d5f5] py-2 text-[11.5px] font-medium text-[#1450d8] disabled:opacity-50"
-                                                    >
-                                                        <SyncOutlined /> {multi ? 'Add' : 'Replace'}
-                                                    </button>
+                                                    <span className="text-right">
+                                                        <span className="block">{dayjs(t.latest.uploadedAt).format('DD MMM YYYY')}</span>
+                                                        <span className="block">{dayjs(t.latest.uploadedAt).format('hh:mm A')}</span>
+                                                    </span>
+                                                    <span className="absolute -top-2 right-1 hidden gap-1 group-hover:flex">
+                                                        <a
+                                                            href={`${fileUrl(t.latest.url)}&download=1`}
+                                                            title="Download"
+                                                            className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#1450d8] shadow"
+                                                        >
+                                                            <DownloadOutlined />
+                                                        </a>
+                                                        {canUpload ? (
+                                                            <button
+                                                                type="button"
+                                                                title={multi ? 'Add file' : 'Replace'}
+                                                                onClick={() => uploadType(doc.type, multi)}
+                                                                className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#1450d8] shadow"
+                                                            >
+                                                                <SyncOutlined />
+                                                            </button>
+                                                        ) : null}
+                                                    </span>
                                                 </div>
                                             ) : (
                                                 <button
                                                     type="button"
                                                     disabled={!canUpload}
                                                     onClick={() => uploadType(doc.type, multi)}
-                                                    className="flex w-full items-center justify-center gap-1.5 rounded-md bg-[#c6d5f5] py-2 text-[11.5px] font-medium text-[#1450d8] disabled:opacity-50"
+                                                    className="mt-auto flex w-full items-center justify-center gap-1.5 rounded-md bg-[#c6d5f5] py-2 text-[11.5px] font-medium text-[#1450d8] disabled:opacity-50"
                                                 >
                                                     <UploadOutlined /> Upload
                                                 </button>
@@ -250,10 +279,16 @@ export default function DocumentsDmsPage() {
                     </div>
 
                     <div className="flex flex-wrap justify-end gap-3">
-                        <Button onClick={() => navigate(-1)}>Cancel</Button>
                         <Button type="primary" loading={processing} disabled={!can(MODULES.dms, 'edit')} onClick={process}>
                             Upload &amp; Processes
                         </Button>
+                        <Button type="primary" loading={busy === 'pdf'} disabled={!files.length || !can(MODULES.dms, 'download')} onClick={() => bundle('pdf')}>
+                            Download As PDF
+                        </Button>
+                        <Button type="primary" loading={busy === 'zip'} disabled={!files.length || !can(MODULES.dms, 'download')} onClick={() => bundle('zip')}>
+                            Download As Zip File
+                        </Button>
+                        <Button onClick={() => navigate(-1)}>Cancel</Button>
                     </div>
                 </>
             ) : (

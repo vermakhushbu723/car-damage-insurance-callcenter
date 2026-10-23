@@ -1,5 +1,5 @@
 import { App, Button, Checkbox, Input, Switch } from 'antd';
-import { CheckCircleFilled, CloseCircleFilled, ClockCircleFilled, CopyOutlined } from '@ant-design/icons';
+import { CheckCircleFilled, CloseCircleFilled, ClockCircleFilled, CopyOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
 import ROUTES from '../../constants/routes.js';
@@ -39,7 +39,7 @@ function CheckboxField({ label, name, options, link, onChange }) {
 }
 
 /** Survey-link dispatch block at the bottom of the intimation form. */
-export default function LinkSection({ link, onChange, onSend, sending, onAutoReminder }) {
+export default function LinkSection({ link, onChange, onSend, sending, onAutoReminder, onRefreshId, refreshingId }) {
     const { message } = App.useApp();
     const navigate = useNavigate();
 
@@ -86,6 +86,24 @@ export default function LinkSection({ link, onChange, onSend, sending, onAutoRem
                 <div className="sm:col-span-2 xl:col-span-4">
                     <CheckboxField label="Send Via" name="sendVia" options={SEND_VIA_OPTIONS} link={link} onChange={onChange} />
                 </div>
+
+                <div className="sm:col-span-2 xl:col-span-2">
+                    <Label>I-Bima Assist Unique ID</Label>
+                    <Input
+                        readOnly
+                        value={link.uniqueId || ''}
+                        placeholder="Issued when the intimation is saved"
+                        suffix={
+                            <ReloadOutlined
+                                spin={refreshingId}
+                                onClick={onRefreshId}
+                                title={link.sentAt ? 'Fixed once the link is sent' : 'Issue a new ID'}
+                                className="cursor-pointer text-[#1450d8]"
+                            />
+                        }
+                    />
+                </div>
+                <div className="hidden xl:col-span-2 xl:block" />
 
                 <div className="sm:col-span-2">
                     <Label>Generate Link Preview</Label>

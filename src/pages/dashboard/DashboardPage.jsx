@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { App, Button, Dropdown, Select } from 'antd';
+import { App, Button, Select } from 'antd';
 import { FilterOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
 import { DASHBOARD_STATS } from '../../data/dashboardData.js';
 import { newIntimationColumns, pendingAllocationColumns } from '../../components/dashboard/dashboardColumns.jsx';
 import StatCard from '../../components/common/StatCard.jsx';
+import QuickFiltersModal, { EMPTY_FILTERS, filterParams } from '../../components/dashboard/QuickFiltersModal.jsx';
 import TableCard from '../../components/common/TableCard.jsx';
 import { STAGE_ROUTES } from '../../components/claim/ClaimShell.jsx';
 import { MODULES } from '../../constants/navigation.js';
@@ -19,8 +20,6 @@ const DASHBOARD_RANGES = [
     { label: 'View I Last 7 Days', value: '7d', caption: 'In Last 7 Days' },
     { label: 'View I Last 30 Days', value: '30d', caption: 'In Last 30 Days' },
 ];
-const PRIORITIES = ['High', 'Medium', 'Low'];
-const SOURCES = ['Call Center', 'Direct', 'Chatbot', 'Website', 'App'];
 
 function ViewAll({ active, onClick }) {
     return (
@@ -36,7 +35,8 @@ export default function DashboardPage() {
     const { can, selectClaim } = useAppState();
     const [range, setRange] = useState(DASHBOARD_RANGES[0].value);
     const [all, setAll] = useState(false);
-    const [filters, setFilters] = useState({ priority: null, source: null });
+    const [filters, setFilters] = useState(EMPTY_FILTERS);
+    const [filtersOpen, setFiltersOpen] = useState(false);
     const [intimationPage, setIntimationPage] = useState(1);
     const [allocationPage, setAllocationPage] = useState(1);
     const [data, setData] = useState(null);
@@ -46,8 +46,7 @@ export default function DashboardPage() {
         setLoading(true);
         const q = new URLSearchParams({ range, page: intimationPage, allocationPage });
         if (all) q.set('all', '1');
-        if (filters.priority) q.set('priority', filters.priority);
-        if (filters.source) q.set('source', filters.source);
+        Object.entries(filterParams(filters)).forEach(([k, v]) => q.set(k, v));
         try {
             setData(await api.get(`/dashboard?${q}`));
         } catch (err) {
@@ -87,19 +86,7 @@ export default function DashboardPage() {
         trend: data?.stats[s.key].trend,
     }));
 
-    const filterItems = [
-        { type: 'group', label: 'Priority', children: PRIORITIES.map((p) => ({ key: `priority:${p}`, label: p })) },
-        { type: 'group', label: 'Source', children: SOURCES.map((p) => ({ key: `source:${p}`, label: p })) },
-        { type: 'divider' },
-        { key: 'clear', label: 'Clear Filters' },
-    ];
-    const onFilter = ({ key }) => {
-        setIntimationPage(1);
-        if (key === 'clear') return setFilters({ priority: null, source: null });
-        const [k, v] = key.split(':');
-        return setFilters((f) => ({ ...f, [k]: f[k] === v ? null : v }));
-    };
-    const activeFilters = [filters.priority, filters.source].filter(Boolean);
+    const activeFilters = Object.values(filterParams(filters)).length;
 
     return (
         <div className="flex flex-col gap-5">
@@ -127,23 +114,17 @@ export default function DashboardPage() {
                     options={DASHBOARD_RANGES}
                     className="w-[210px]"
                 />
-                <Dropdown
-                    trigger={['click']}
-                    menu={{
-                        items: filterItems,
-                        onClick: onFilter,
-                        selectable: true,
-                        multiple: true,
-                        selectedKeys: [filters.priority && `priority:${filters.priority}`, filters.source && `source:${filters.source}`].filter(Boolean),
-                    }}
-                >
-                    <button type="button" className="flex items-center gap-2 text-[12px] font-semibold text-slate-700">
+                <div className="flex items-center gap-3">
+                    <Button type="primary" onClick={() => navigate(ROUTES.analytics)}>
+                        Analyze Data
+                    </Button>
+                    <button type="button" onClick={() => setFiltersOpen(true)} className="flex items-center gap-2 text-[12px] font-semibold text-slate-700">
                         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1450d8] text-white">
                             <FilterOutlined />
                         </span>
-                        Quick Filters{activeFilters.length ? ` (${activeFilters.join(', ')})` : ''}
+                        Quick Filters{activeFilters ? ` (${activeFilters})` : ''}
                     </button>
-                </Dropdown>
+                </div>
             </div>
 
             <TableCard
@@ -164,6 +145,18 @@ export default function DashboardPage() {
                 page={data?.intimations.page ?? 1}
                 totalPages={data?.intimations.totalPages ?? 1}
                 onPageChange={setIntimationPage}
+            />
+
+            <QuickFiltersModal
+                open={filtersOpen}
+                value={filters}
+                options={data?.filterOptions}
+                onClose={() => setFiltersOpen(false)}
+                onApply={(f) => {
+                    setFilters(f);
+                    setIntimationPage(1);
+                    setFiltersOpen(false);
+                }}
             />
 
             <TableCard

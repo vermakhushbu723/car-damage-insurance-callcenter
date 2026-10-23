@@ -1,6 +1,7 @@
 /** Every path in the app lives here so links never go stale. */
 export const ROUTES = {
     dashboard: '/',
+    analytics: '/dashboard/analytics',
 
     // My Claims
     allClaims: '/claims/all',

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { App, Button, Input, InputNumber, Spin } from 'antd';
-import { DownloadOutlined, FileTextOutlined, SaveOutlined } from '@ant-design/icons';
+import { DownloadOutlined, FileTextOutlined, FormOutlined, SaveOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
 import { GST_RATE, REMARK_LIMIT } from '../../data/paybillData.js';
@@ -183,10 +183,10 @@ export default function SurveyPaybillPage() {
 
                                 <div className="mt-4 flex flex-col gap-4 border-t border-slate-200 pt-4 sm:flex-row sm:items-start">
                                     <div className="flex gap-3">
-                                        <Button disabled={!canEdit} onClick={() => switchMode('auto')} className={cn(mode === 'auto' && '!border-[#1450d8] !text-[#1450d8]')}>
+                                        <Button disabled={!canEdit} icon={<ThunderboltOutlined />} iconPlacement="end" onClick={() => switchMode('auto')} className={cn(mode === 'auto' && '!border-[#1450d8] !text-[#1450d8]')}>
                                             Auto
                                         </Button>
-                                        <Button type={mode === 'manual' ? 'primary' : 'default'} disabled={!canEdit} onClick={() => switchMode('manual')}>
+                                        <Button type={mode === 'manual' ? 'primary' : 'default'} disabled={!canEdit} icon={<FormOutlined />} iconPlacement="end" onClick={() => switchMode('manual')}>
                                             Manual
                                         </Button>
                                     </div>

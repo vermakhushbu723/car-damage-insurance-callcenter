@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 import AppLayout from '../components/layout/AppLayout.jsx';
 import DashboardPage from '../pages/dashboard/DashboardPage.jsx';
+import AnalyticsPage from '../pages/dashboard/AnalyticsPage.jsx';
 import IntimationPage from '../pages/intimation/IntimationPage.jsx';
 import HandlerAllocationPage from '../pages/claims/HandlerAllocationPage.jsx';
 import SurveyorAssignmentPage from '../pages/claims/SurveyorAssignmentPage.jsx';
@@ -29,7 +30,9 @@ const PAGES = {
     [ROUTES.surveyorAssignment]: <SurveyorAssignmentPage />,
     [ROUTES.claimDetails]: <ClaimDetailsPage />,
     [ROUTES.aiIla]: <AiIlaPage />,
-    [ROUTES.handlerIla]: <LiabilityAssessmentPage />,
+    [ROUTES.handlerIla]: <LiabilityAssessmentPage kind="liability" />,
+    [ROUTES.flaPending]: <LiabilityAssessmentPage kind="fla" />,
+    [ROUTES.analytics]: <AnalyticsPage />,
     [ROUTES.paymentRecommendation]: <PaymentRecommendationPage />,
     [ROUTES.surveyPaybill]: <SurveyPaybillPage />,
     [ROUTES.issueLetter]: <IssueLetterPage />,

@@ -1,5 +1,8 @@
 import { Checkbox, DatePicker, Input, Radio, Select, TimePicker } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { FileTextOutlined, SearchOutlined } from '@ant-design/icons';
+
+import { fileUrl } from '../../api/client.js';
+import { fileSize } from '../../utils/format.js';
 
 const { TextArea } = Input;
 
@@ -13,7 +16,7 @@ function FieldLabel({ children }) {
  * Renders one entry of a form config.
  * Controlled through `value` / `onChange` so the page owns all form state.
  */
-export default function DynamicField({ field, value, onChange, values }) {
+export default function DynamicField({ field, value, onChange, values, documents }) {
     if (field.type === 'spacer') return <div aria-hidden className="hidden md:block" />;
 
     if (field.type === 'heading') {
@@ -64,6 +67,37 @@ export default function DynamicField({ field, value, onChange, values }) {
                         style={field.rowSpan ? { height: '100%', minHeight: 120 } : undefined}
                     />
                 );
+            case 'tags':
+                return (
+                    <Select
+                        {...common}
+                        mode="tags"
+                        value={Array.isArray(value) ? value : value ? [value] : []}
+                        onChange={handle}
+                        open={false}
+                        suffixIcon={null}
+                        tokenSeparators={[',']}
+                    />
+                );
+            case 'document': {
+                const doc = documents?.[field.docType];
+                return doc ? (
+                    <a
+                        href={fileUrl(doc.url)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex w-fit items-center gap-2 rounded-md bg-[#f3f5f9] px-3 py-2 text-[11px] text-slate-800 hover:text-[#1450d8]"
+                    >
+                        <FileTextOutlined />
+                        <span>
+                            <span className="block font-medium">{doc.name}</span>
+                            <span className="block text-[10px] text-slate-500">{fileSize(doc.size)}</span>
+                        </span>
+                    </a>
+                ) : (
+                    <span className="block rounded-md bg-[#f3f5f9] px-3 py-2 text-[11px] text-slate-500">Not uploaded (Documents DMS &gt; Estimate)</span>
+                );
+            }
             case 'search':
                 return (
                     <Input
@@ -77,6 +111,7 @@ export default function DynamicField({ field, value, onChange, values }) {
                 return (
                     <Radio.Group
                         value={value}
+                        disabled={field.disabled}
                         onChange={(event) => handle(event.target.value)}
                         className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2"
                     >

@@ -39,7 +39,7 @@ export default function IssueLetterPage() {
 
     const [form, setForm] = useState(() => defaultLetterForm(dayjs().startOf('day')));
     const [requirements, setRequirements] = useState(() => initialRequirements('vehicle-not-in-workshop'));
-    const [channel, setChannel] = useState('email');
+    const [channels, setChannels] = useState(() => SEND_VIA_CHANNELS.filter((c) => c.checked).map((c) => c.key));
     const [contact, setContact] = useState({ mobile: '', email: '' });
     const [info, setInfo] = useState(null);
     const [lastLetter, setLastLetter] = useState(null);
@@ -106,18 +106,20 @@ export default function IssueLetterPage() {
             responseDueBy: form.responseDueBy.format('YYYY-MM-DD'),
         },
         requirements: requirements.map(({ label, checked }) => ({ label, checked })),
-        channel,
+        channels,
         contact,
     });
 
     const generate = async () => {
         if (!letter.items.length) return message.warning('Select at least one document / detail to request');
+        if (!channels.length) return message.warning('Choose how the letter is sent (SMS / Email / WhatsApp)');
         setBusy('generate');
         try {
             const res = await api.post(`/claims/${claim.id}/letters`, body());
             setLastLetter(res.letter);
             const s = res.delivery.status;
-            if (s === 'Delivered') message.success(`Letter ${res.letter.id} sent by ${res.letter.channel}`);
+            if (s === 'Delivered' && !res.delivery.error) message.success(`Letter ${res.letter.id} sent by ${res.letter.channel}`);
+            else if (s === 'Delivered') message.warning(`Letter ${res.letter.id} sent, but one channel failed: ${res.delivery.error}`);
             else if (s === 'Pending') message.warning(`Letter ${res.letter.id} issued -- no message gateway is configured, so it was not delivered.`);
             else message.error(`Letter ${res.letter.id} issued but sending failed: ${res.delivery.error}`);
             load();
@@ -150,8 +152,8 @@ export default function IssueLetterPage() {
         { key: 'claimType', label: 'Claim Type', value: claim.claimType || '—' },
         { key: 'policyNumber', label: 'Policy Number', value: claim.policyNo || '—' },
         { key: 'intimatedBy', label: 'Intimated By', value: claim.intimatedBy || '—' },
-        { key: 'vehicleNo', label: 'Vehicle No.', value: claim.vehicleNo || '—' },
-        { key: 'mobileNo', label: 'Mobile No.', value: claim.mobile || '—' },
+        { key: 'vehicleNo', label: 'Vehicle Number', value: claim.vehicleNo || '—' },
+        { key: 'mobileNo', label: 'Contact No', value: claim.mobile || '—' },
     ];
 
     const generateButton = (
@@ -280,13 +282,13 @@ export default function IssueLetterPage() {
 
                 <div>
                     <h3 className="mb-3 text-[15px] font-bold text-[#1450d8]">Letter will be sent via</h3>
-                    <Radio.Group value={channel} onChange={(event) => setChannel(event.target.value)} className="mb-5 flex flex-wrap gap-x-8 gap-y-2">
+                    <Checkbox.Group value={channels} onChange={setChannels} className="mb-5 flex flex-wrap gap-x-8 gap-y-2">
                         {SEND_VIA_CHANNELS.map((option) => (
-                            <Radio key={option.key} value={option.key} className="!mr-0 text-[12.5px]">
+                            <Checkbox key={option.key} value={option.key} className="!ml-0 text-[12.5px]">
                                 {option.label}
-                            </Radio>
+                            </Checkbox>
                         ))}
-                    </Radio.Group>
+                    </Checkbox.Group>
 
                     <h3 className="mb-3 text-[15px] font-bold text-[#1450d8]">Contact Details</h3>
                     <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
