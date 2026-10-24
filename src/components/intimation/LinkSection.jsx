@@ -1,5 +1,5 @@
 import { App, Button, Checkbox, Input, Switch } from 'antd';
-import { CheckCircleFilled, CloseCircleFilled, ClockCircleFilled, CopyOutlined, ReloadOutlined } from '@ant-design/icons';
+import { CheckCircleFilled, CloseCircleFilled, ClockCircleFilled, CopyOutlined, ExportOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
 import ROUTES from '../../constants/routes.js';
@@ -38,21 +38,25 @@ function CheckboxField({ label, name, options, link, onChange }) {
     );
 }
 
-/** Survey-link dispatch block at the bottom of the intimation form. */
-export default function LinkSection({ link, onChange, onSend, sending, onAutoReminder, onRefreshId, refreshingId }) {
+/**
+ * Survey-link dispatch block at the bottom of the intimation form. The
+ * I-Bima Assist ID is the claim's own Assist Claim ID (one ID per claim).
+ */
+export default function LinkSection({ link, assistId, onChange, onSend, sending, onAutoReminder }) {
     const { message } = App.useApp();
     const navigate = useNavigate();
 
-    const copyLink = async () => {
-        if (!link.url) return message.info('The link is created when you send it');
+    const copy = async (text, what, emptyNote) => {
+        if (!text) return message.info(emptyNote);
         try {
-            await navigator.clipboard.writeText(link.url);
-            message.success('Link copied');
+            await navigator.clipboard.writeText(text);
+            message.success(`${what} copied`);
         } catch {
-            message.error('Could not copy the link');
+            message.error(`Could not copy the ${what.toLowerCase()}`);
         }
         return undefined;
     };
+    const copyLink = () => copy(link.url, 'Link', 'The link is created when you send it');
 
     const dispatch = link.dispatch;
     const tone = dispatch ? DISPATCH_TONES[dispatch.status] ?? DISPATCH_TONES.Pending : null;
@@ -91,16 +95,9 @@ export default function LinkSection({ link, onChange, onSend, sending, onAutoRem
                     <Label>I-Bima Assist Unique ID</Label>
                     <Input
                         readOnly
-                        value={link.uniqueId || ''}
+                        value={assistId || ''}
                         placeholder="Issued when the intimation is saved"
-                        suffix={
-                            <ReloadOutlined
-                                spin={refreshingId}
-                                onClick={onRefreshId}
-                                title={link.sentAt ? 'Fixed once the link is sent' : 'Issue a new ID'}
-                                className="cursor-pointer text-[#1450d8]"
-                            />
-                        }
+                        suffix={<CopyOutlined onClick={() => copy(assistId, 'ID', 'The ID is issued when the intimation is saved')} title="Copy" className="cursor-pointer text-[#1450d8]" />}
                     />
                 </div>
                 <div className="hidden xl:col-span-2 xl:block" />
@@ -112,7 +109,16 @@ export default function LinkSection({ link, onChange, onSend, sending, onAutoRem
                             readOnly
                             value={link.url || ''}
                             placeholder="The survey link is generated when you send it"
-                            suffix={<CopyOutlined onClick={copyLink} className="cursor-pointer text-[#1450d8]" />}
+                            suffix={
+                                <span className="flex items-center gap-2">
+                                    {link.url ? (
+                                        <a href={link.url} target="_blank" rel="noreferrer" title="Open the survey web link" className="text-[#1450d8]">
+                                            <ExportOutlined />
+                                        </a>
+                                    ) : null}
+                                    <CopyOutlined onClick={copyLink} title="Copy" className="cursor-pointer text-[#1450d8]" />
+                                </span>
+                            }
                         />
                         <Button type="primary" loading={sending} onClick={onSend} className="sm:w-[120px]">
                             {link.url ? 'Resend Link' : 'Send Link'}
@@ -137,6 +143,13 @@ export default function LinkSection({ link, onChange, onSend, sending, onAutoRem
                         ) : (
                             <span className="text-[10.5px] text-slate-500">Not sent yet</span>
                         )}
+                        {link.survey?.submittedAt ? (
+                            <span className="w-full text-[10.5px] font-medium text-emerald-700">
+                                Survey submitted {fmtDateTime(link.survey.submittedAt)} · {link.survey.fileCount} file(s) in DMS
+                            </span>
+                        ) : link.accessedAt ? (
+                            <span className="w-full text-[10.5px] text-slate-500">Link opened {fmtDateTime(link.accessedAt)}</span>
+                        ) : null}
                     </div>
                 </div>
 

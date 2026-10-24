@@ -32,11 +32,11 @@ export const CLAIM_INFO_SECTIONS = {
         title: 'Claim Information',
         fields: [
             t('claimNumber', 'Claim Number', 'Enter Claim Number'),
-            t('insurerClaimReference', 'Insurer Claim Reference', 'Enter Insurer Claim Reference'),
+            t('insurerTpa', 'Insurer / TPA', 'Enter Insurer / Tpa'),
             s('claimType', 'Claim Type', 'Enter Claim Type', opts('Motor OD', 'Motor TP', 'Motor OD + TP', 'Theft', 'Fire')),
             d('claimIntimationDate', 'Claim Intimation Date'),
             t('policyNumber', 'Policy Number', 'Enter Policy Number'),
-            t('insurerTpa', 'Insurer / TPA', 'Enter Insurer / Tpa'),
+            t('insurerClaimReference', 'Insurer Claim Number', 'Enter Insurer Claim Number'),
             d('claimRegistrationDate', 'Claim Registration Date'),
             s('claimStatus', 'Claim  Status', 'Select Claim Status', opts('Draft', 'Open', 'Closed', 'Rejected', 'Reopened')),
             t('claimHandler', 'Claim Handler', 'Enter Assigned Claim Handler'),

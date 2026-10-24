@@ -80,6 +80,7 @@ export const INTIMATION_LEFT_SECTIONS = [
                 options: opts('Demo Insurance Co', 'ICICI Lombard', 'HDFC Ergo', 'Bajaj Allianz'),
             },
             { name: 'insurerCode', label: 'Insurer Code', type: 'text', placeholder: 'DEMO123' },
+            { name: 'insurerClaimNumber', label: 'Insurer Claim Number', type: 'text', placeholder: '1234567890' },
             { name: 'policyNumber', label: 'Policy Number', type: 'text', placeholder: '1234567891012' },
             {
                 name: 'policyType',
@@ -104,7 +105,6 @@ export const INTIMATION_LEFT_SECTIONS = [
                 placeholder: 'Delhi HUb',
                 options: opts('Delhi HUb', 'Noida, UP Branch', 'Mumbai Branch'),
             },
-            { name: 'insurerClaimNumber', label: 'Insurer Claim Number', type: 'text', placeholder: '1234567890' },
             {
                 name: 'lineOfBusiness',
                 label: 'Line Of Business',

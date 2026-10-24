@@ -71,6 +71,8 @@ export default function DocumentViewer({ files = [], index = 0, onIndex }) {
             <div className="flex min-h-[460px] items-center justify-center overflow-auto bg-slate-50 px-4 py-4">
                 {!doc ? (
                     <Empty description="No documents uploaded for this claim yet. Upload them from the DMS panel." />
+                ) : doc.mime?.startsWith('video/') ? (
+                    <video src={url} controls className="max-h-[560px] w-full rounded bg-black" />
                 ) : doc.mime === 'application/pdf' ? (
                     <iframe title={doc.name} src={url} className="h-[560px] w-full rounded border border-slate-200 bg-white" style={{ zoom: `${zoom}%` }} />
                 ) : (

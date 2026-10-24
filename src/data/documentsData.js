@@ -14,6 +14,7 @@ export const DOCUMENT_TYPES = [
     { key: 'po', type: 'policy-copy', code: 'PO', label: 'Policy', icon: 'file-protect' },
     { key: 'cf', type: 'claim-form', code: 'CF', label: 'Claim Form', icon: 'form' },
     { key: 'photos', type: 'vehicle-photos', code: 'PHOTOS', label: 'Vehicle Photos', icon: 'picture' },
+    { key: 'kyc', type: 'kyc', code: 'KYC', label: 'KYC (Aadhar / PAN)', icon: 'idcard-two' },
     { key: 'sr', type: 'surveyor-report', code: 'SR', label: 'Surveyor Report', icon: 'file-done' },
     { key: 'other', type: 'other', code: 'OTHER', label: 'Documents', icon: 'folder' },
 ];

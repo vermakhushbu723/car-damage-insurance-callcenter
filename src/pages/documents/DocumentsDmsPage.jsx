@@ -176,7 +176,7 @@ export default function DocumentsDmsPage() {
                                     const Icon = getIcon(doc.icon);
                                     const t = byType[doc.type];
                                     const status = t?.status ?? 'none';
-                                    const multi = doc.type === 'vehicle-photos' || doc.type === 'other' || doc.type === 'surveyor-report';
+                                    const multi = ['vehicle-photos', 'other', 'surveyor-report', 'kyc'].includes(doc.type);
                                     return (
                                         <div key={doc.key} className="flex flex-col rounded-xl border border-slate-200 bg-white px-3 py-3">
                                             <div className="mb-2 flex items-start gap-3">
