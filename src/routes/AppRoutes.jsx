@@ -20,6 +20,7 @@ import PlaceholderPage from '../pages/placeholders/PlaceholderPage.jsx';
 import NoAccess from '../pages/placeholders/NoAccess.jsx';
 import LoginPage from '../pages/auth/LoginPage.jsx';
 import { useAppState } from '../context/AppContext.jsx';
+import { needsRolePick } from '../auth/session.js';
 import { flattenNav } from '../constants/navigation.js';
 import ROUTES from '../constants/routes.js';
 
@@ -48,7 +49,7 @@ const PAGES = {
 function RequireAuth({ children }) {
     const { user } = useAppState();
     const location = useLocation();
-    if (!user || user.mustChangePassword) return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
+    if (!user || user.mustChangePassword || needsRolePick()) return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
     return children;
 }
 

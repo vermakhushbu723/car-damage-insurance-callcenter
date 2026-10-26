@@ -100,3 +100,10 @@ export const navForUser = (canView) =>
     SIDE_NAV_ITEMS.map((item) => (item.children ? { ...item, children: item.children.filter((c) => canView(c.module)) } : item)).filter(
         (item) => (item.children ? item.children.length > 0 : canView(item.module))
     );
+
+/** Where a role lands after sign-in / a role switch: its dashboard, else its first screen. */
+export const landingFor = (canView) => {
+    if (canView(MODULES.dashboard)) return ROUTES.dashboard;
+    const first = navForUser(canView).flatMap((item) => (item.children ? item.children : [item]))[0];
+    return first?.path ?? ROUTES.dashboard;
+};

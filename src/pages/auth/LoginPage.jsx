@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { App, Button, Input } from 'antd';
-import { LockOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons';
+import { CheckCircleFilled, LockOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons';
 
 import loginImage from '../../assets/images/loginHero.jpg';
 import ibimaLogo from '../../assets/images/ibimaLogo.svg';
-import { changePassword, getUser, login, logout } from '../../auth/session.js';
+import { can, changePassword, getUser, login, logout, needsRolePick, switchRole } from '../../auth/session.js';
+import { landingFor } from '../../constants/navigation.js';
 import ROUTES from '../../constants/routes.js';
 
 // Same look as the Admin portal's sign-in. Accounts are created there
@@ -44,11 +45,41 @@ export default function LoginPage() {
     const [newPassword, setNewPassword] = useState('');
     const [confirm, setConfirm] = useState('');
 
+    // Step 3 for a user with several roles: pick the one to work in.
+    const [pickRole, setPickRole] = useState(() => !getUser()?.mustChangePassword && needsRolePick());
+    const [roleKey, setRoleKey] = useState(() => getUser()?.roleKey ?? null);
+
     const target = location.state?.from ?? ROUTES.dashboard;
+
+    /** Signed in: pick a role first when there are several, else go in. */
+    const enter = () => {
+        if (needsRolePick()) {
+            setRoleKey(getUser()?.roleKey ?? null);
+            setPickRole(true);
+            return;
+        }
+        navigate(target, { replace: true });
+    };
+
+    const handleRole = async () => {
+        if (!roleKey) return setError('Select a role to continue.');
+        setError('');
+        setLoading(true);
+        try {
+            const user = await switchRole(roleKey);
+            message.success(`Welcome, ${user.name} · ${user.roleName}`);
+            navigate(landingFor((m) => can(user, m)), { replace: true });
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+        return undefined;
+    };
 
     useEffect(() => {
         const u = getUser();
-        if (u && !u.mustChangePassword) navigate(target, { replace: true });
+        if (u && !u.mustChangePassword && !needsRolePick()) navigate(target, { replace: true });
         else if (new URLSearchParams(location.search).get('expired')) setError('Your session has ended. Please sign in again.');
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -74,8 +105,8 @@ export default function LoginPage() {
                 setMustChange(true);
                 return undefined;
             }
-            message.success(`Welcome, ${user.name}`);
-            navigate(target, { replace: true });
+            if (!needsRolePick()) message.success(`Welcome, ${user.name}`);
+            enter();
         } catch (err) {
             setError(err.message);
             refreshCaptcha();
@@ -94,7 +125,8 @@ export default function LoginPage() {
         try {
             await changePassword(password, newPassword);
             message.success('Password changed');
-            navigate(target, { replace: true });
+            setMustChange(false);
+            enter();
         } catch (err) {
             setError(err.message);
         } finally {
@@ -120,7 +152,50 @@ export default function LoginPage() {
                         <img src={ibimaLogo} alt="IBima Assist" style={{ height: 44 }} />
                     </div>
 
-                    {!mustChange ? (
+                    {pickRole ? (
+                        <>
+                            <h1 className="m-0 text-lg font-bold text-slate-900">Select your role</h1>
+                            <p className="mt-0.5 mb-3 text-[12px] text-slate-900">
+                                Hi {getUser()?.name}, your account has more than one role. Choose the one to work in — the menu and dashboard follow
+                                it. You can switch any time from the top bar.
+                            </p>
+                            <div role="radiogroup" aria-label="Roles" className="flex flex-col gap-2">
+                                {(getUser()?.roles ?? []).map((r) => {
+                                    const active = r.roleKey === roleKey;
+                                    return (
+                                        <button
+                                            key={r.roleKey}
+                                            type="button"
+                                            role="radio"
+                                            aria-checked={active}
+                                            onClick={() => setRoleKey(r.roleKey)}
+                                            className={`flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-[12.5px] font-semibold transition ${
+                                                active ? 'border-[#1450d8] bg-[#eef3fe] text-[#1450d8]' : 'border-slate-200 bg-white text-slate-800 hover:border-[#1450d8]'
+                                            }`}
+                                        >
+                                            {r.roleName}
+                                            {active ? <CheckCircleFilled /> : null}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            {error ? <p role="alert" className="mt-2 mb-0 text-xs text-red-500">{error}</p> : null}
+                            <Button type="primary" block loading={loading} onClick={handleRole} className="mt-3" style={{ height: 34, fontWeight: 600 }}>
+                                Continue
+                            </Button>
+                            <Button
+                                type="link"
+                                block
+                                onClick={() => {
+                                    logout();
+                                    setPickRole(false);
+                                    setPassword('');
+                                }}
+                            >
+                                Sign in as someone else
+                            </Button>
+                        </>
+                    ) : !mustChange ? (
                         <>
                             <h1 className="m-0 text-lg font-bold text-slate-900">Welcome back</h1>
                             <p className="mt-0.5 mb-3 text-[12px] text-slate-900">

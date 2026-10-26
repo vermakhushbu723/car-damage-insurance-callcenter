@@ -38,7 +38,21 @@ export function onSessionChange(fn) {
 /** Signs in with User ID or email; throws ApiError with the server's reason. */
 export async function login(identifier, password) {
     const data = await api.post('/auth/login', { identifier: identifier.trim(), password }, { auth: false });
-    write({ token: data.token, user: data.user, expiresAt: Date.now() + data.expiresIn * 1000 });
+    // A user with several roles (Admin > Create Users) picks one before entering.
+    write({ token: data.token, user: data.user, expiresAt: Date.now() + data.expiresIn * 1000, roleChosen: !(data.user.roles?.length > 1) });
+    return data.user;
+}
+
+/** Signed in with several roles but none picked yet? */
+export const needsRolePick = () => {
+    const s = read();
+    return !!s && !s.roleChosen && s.user?.roles?.length > 1;
+};
+
+/** Works in another of the user's roles: new session, menu + permissions follow. */
+export async function switchRole(roleKey) {
+    const data = await api.post('/auth/switch-role', { roleKey });
+    write({ token: data.token, user: data.user, expiresAt: Date.now() + data.expiresIn * 1000, roleChosen: true });
     return data.user;
 }
 
