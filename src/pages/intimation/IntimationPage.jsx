@@ -169,6 +169,15 @@ export default function IntimationPage() {
             else message.error(`Sending failed: ${res.link.dispatch.results.map((r) => r.error).filter(Boolean)[0] ?? ''}`);
         });
 
+    const onGenerateLink = () =>
+        run('generate-link', async () => {
+            const saved = editing ?? (await save());
+            const res = await api.post(`/claims/${saved.id}/survey-link/generate`, linkSettings());
+            setLink(res.link);
+            setClaim(res.claim);
+            message.success('Survey link generated');
+        });
+
     const onAutoReminder = (checked) => {
         handleLinkChange('autoReminder', checked);
         if (editing) api.patch(`/claims/${editing.id}`, { link: { autoReminder: checked } }).catch((err) => message.error(errText(err)));
@@ -215,6 +224,10 @@ export default function IntimationPage() {
                         <LinkSection
                             link={link}
                             onChange={handleLinkChange}
+                            onGenerateId={onSave}
+                            generatingId={busy === 'save'}
+                            onGenerateLink={onGenerateLink}
+                            generatingLink={busy === 'generate-link'}
                             onSend={onSendLink}
                             sending={busy === 'link'}
                             onAutoReminder={onAutoReminder}

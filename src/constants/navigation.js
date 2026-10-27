@@ -5,8 +5,6 @@ import {
     DeploymentUnitOutlined,
     FileTextOutlined,
     HomeOutlined,
-    LoadingOutlined,
-    ShopOutlined,
     UserOutlined,
 } from '@ant-design/icons';
 
@@ -55,38 +53,36 @@ export const SIDE_NAV_ITEMS = [
         label: 'My Claims',
         icon: DeploymentUnitOutlined,
         children: [
-            { key: 'all-claims', label: 'All Claims', path: ROUTES.allClaims, module: M.dashboard },
-            { key: 'new-assigned', label: 'New/Assigned', path: ROUTES.newAssigned, module: M.dashboard },
-            { key: 'claim-details', label: 'Claim Details', path: ROUTES.claimDetails, module: M.details },
-            { key: 'ai-ila', label: 'AI ILA Pending', path: ROUTES.aiIla, module: M.aiIla },
-            { key: 'handler-ila', label: 'Handler ILA Pending', path: ROUTES.handlerIla, module: M.handlerIla },
-            { key: 'fla-pending', label: 'FLA Pending', path: ROUTES.flaPending, module: M.fla },
-            { key: 'payment-recommendation', label: 'Payment Recommendation', path: ROUTES.paymentRecommendation, module: M.payment },
-        ],
-    },
-    {
-        key: 'claim-processing',
-        label: 'Claim Processing',
-        icon: LoadingOutlined,
-        children: [
-            { key: 'intimation', label: 'Intimation', path: ROUTES.intimation, module: M.intimation },
-            { key: 'handler-allocation', label: 'Handler Allocation', path: ROUTES.handlerAllocation, module: M.handler },
-            { key: 'surveyor-assignment', label: 'Surveyor Assignment', path: ROUTES.surveyorAssignment, module: M.surveyor },
-            { key: 'survey-paybill', label: 'Survey Paybill', path: ROUTES.surveyPaybill, module: M.paybill },
-            { key: 'issue-letter', label: 'Issue Letter', path: ROUTES.issueLetter, module: M.letters },
+            { key: 'total-intimation', label: 'Total Intimation', path: ROUTES.totalIntimation, module: M.dashboard },
+            { key: 'new-intimations', label: 'New Intimations', path: ROUTES.newIntimations, module: M.dashboard },
+            { key: 'pending-allocation', label: 'Pending Allocation', path: ROUTES.pendingAllocation, module: M.dashboard },
+            { key: 'link-sent', label: 'Link Sent', path: ROUTES.linkSent, module: M.dashboard },
+            { key: 'view-claim', label: 'View Claim', path: ROUTES.viewClaim, module: M.dashboard },
         ],
     },
     { key: 'documents-dms', label: 'Documents DMS', icon: FileTextOutlined, path: ROUTES.documentsDms, module: M.dms },
     { key: 'communication', label: 'Communication', icon: CustomerServiceOutlined, path: ROUTES.communication, module: M.communication },
-    { key: 'workshop', label: 'Workshop', icon: ShopOutlined, path: ROUTES.workshop, module: M.workshop },
     { key: 'reports', label: 'Report & Analytics', icon: BarChartOutlined, path: ROUTES.reports, module: M.reports },
     { key: 'my-account', label: 'My Account', icon: UserOutlined, path: ROUTES.myAccount },
 ];
 
-/** Reachable from the claim action bar rather than the rail. */
+/**
+ * Not in the rail: the claim journey screens (opened from a claim, its stage
+ * tracker or "Intimate New Claim") and pages reached from the claim action bar.
+ */
 export const EXTRA_ROUTES = [
     { key: 'analytics', label: 'Call Center / CSM Dashboard', path: ROUTES.analytics, module: M.dashboard },
     { key: 'communication-history', label: 'Communication History', path: ROUTES.communicationHistory, module: M.communication },
+    { key: 'intimation', label: 'Intimation', path: ROUTES.intimation, module: M.intimation },
+    { key: 'handler-allocation', label: 'Handler Allocation', path: ROUTES.handlerAllocation, module: M.handler },
+    { key: 'surveyor-assignment', label: 'Surveyor Assignment', path: ROUTES.surveyorAssignment, module: M.surveyor },
+    { key: 'claim-details', label: 'Claim Details', path: ROUTES.claimDetails, module: M.details },
+    { key: 'ai-ila', label: 'AI ILA', path: ROUTES.aiIla, module: M.aiIla },
+    { key: 'handler-ila', label: 'Handler ILA', path: ROUTES.handlerIla, module: M.handlerIla },
+    { key: 'fla-pending', label: 'FLA', path: ROUTES.flaPending, module: M.fla },
+    { key: 'payment-recommendation', label: 'Payment Recommendation', path: ROUTES.paymentRecommendation, module: M.payment },
+    { key: 'survey-paybill', label: 'Survey Paybill', path: ROUTES.surveyPaybill, module: M.paybill },
+    { key: 'issue-letter', label: 'Issue Letter', path: ROUTES.issueLetter, module: M.letters },
 ];
 
 /** Flattened nav – handy for route generation. */
@@ -104,6 +100,7 @@ export const navForUser = (canView) =>
 /** Where a role lands after sign-in / a role switch: its dashboard, else its first screen. */
 export const landingFor = (canView) => {
     if (canView(MODULES.dashboard)) return ROUTES.dashboard;
-    const first = navForUser(canView).flatMap((item) => (item.children ? item.children : [item]))[0];
+    const claimScreens = EXTRA_ROUTES.filter((r) => r.path.startsWith('/claim') && canView(r.module));
+    const first = [...claimScreens, ...navForUser(canView).flatMap((item) => (item.children ? item.children : [item]))][0];
     return first?.path ?? ROUTES.dashboard;
 };

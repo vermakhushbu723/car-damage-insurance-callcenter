@@ -3,7 +3,7 @@
  * `FormSection` + `DynamicField` render it, so adding a field never
  * means touching a component.
  *
- * field: { name, label, type, placeholder, options?, full?, rows?, disabled? }
+ * field: { name, label, type, placeholder, options?, full?, span?, rows?, disabled? }
  * type:  text | select | date | time | textarea | radio | checkbox | search | heading | static | spacer
  */
 
@@ -15,8 +15,11 @@ const CITY_OPTIONS = opts('Thane', 'Mumbai', 'Noida', 'Delhi', 'Bengaluru');
 const STATE_OPTIONS = opts('Maharashtra', 'Uttar Pradesh', 'Delhi', 'Karnataka', 'Gujarat');
 const PINCODE_OPTIONS = opts('400607', '201301', '110001', '560001');
 const COUNTRY_OPTIONS = opts('India');
-const LANDMARK_OPTIONS = opts('Dmart', 'City Mall', 'Metro Station', 'Bus Depot');
 const LOB_OPTIONS = opts('Motor', 'Fire', 'Marine', 'Cattle', 'Engg', 'MISC');
+const DISTRICT_OPTIONS = opts('Thane', 'Mumbai', 'Gautam Buddh Nagar', 'New Delhi', 'Bengaluru Urban');
+const NCB_OPTIONS = opts('0%', '20%', '25%', '35%', '45%', '50%');
+const NATURE_OF_LOSS_OPTIONS = opts('Accidental External Means', 'Fire', 'Theft', 'Flood/Natural Calamity', 'Riot/Strike', 'Others');
+const SERVICING_BRANCH_OPTIONS = opts('Noida, UP Branch', 'Delhi HUb', 'Mumbai Branch', 'Thane Branch');
 
 /** Compact strip above the form cards. */
 export const INTIMATION_META_FIELDS = [
@@ -80,7 +83,6 @@ export const INTIMATION_LEFT_SECTIONS = [
                 options: opts('Demo Insurance Co', 'ICICI Lombard', 'HDFC Ergo', 'Bajaj Allianz'),
             },
             { name: 'insurerCode', label: 'Insurer Code', type: 'text', placeholder: 'DEMO123' },
-            { name: 'insurerClaimNumber', label: 'Insurer Claim Number', type: 'text', placeholder: '1234567890' },
             { name: 'policyNumber', label: 'Policy Number', type: 'text', placeholder: '1234567891012' },
             {
                 name: 'policyType',
@@ -105,6 +107,7 @@ export const INTIMATION_LEFT_SECTIONS = [
                 placeholder: 'Delhi HUb',
                 options: opts('Delhi HUb', 'Noida, UP Branch', 'Mumbai Branch'),
             },
+            { name: 'insurerClaimNumber', label: 'Insurer Claim Number', type: 'text', placeholder: '1234567890' },
             {
                 name: 'lineOfBusiness',
                 label: 'Line Of Business',
@@ -112,13 +115,7 @@ export const INTIMATION_LEFT_SECTIONS = [
                 placeholder: 'Motor/Fire/Marine/Cattle/Engg/MISC',
                 options: LOB_OPTIONS,
             },
-            {
-                name: 'lineOfBusinessSecondary',
-                label: 'Line Of Business',
-                type: 'select',
-                placeholder: 'Motor/Fire/Marine/Cattle/Engg/MISC',
-                options: LOB_OPTIONS,
-            },
+            { name: 'ncb', label: 'NCB', type: 'select', placeholder: '0%/20%/25%/35%/45%/50%', options: NCB_OPTIONS },
             {
                 name: 'product',
                 label: 'Product',
@@ -132,13 +129,7 @@ export const INTIMATION_LEFT_SECTIONS = [
         key: 'vehicle',
         title: 'Vehicle Details',
         fields: [
-            {
-                name: 'registrationNumber',
-                label: 'Registration Number',
-                type: 'select',
-                placeholder: 'MH 01 J 1895',
-                options: opts('MH 01 J 1895', 'MH 12 X 1234', 'DL 01 AB 1234'),
-            },
+            { name: 'registrationNumber', label: 'Registration Number', type: 'text', placeholder: 'MH 01 J 1895' },
             { name: 'registrationDate', label: 'Registration Date', type: 'date', placeholder: '15 March 2025' },
             {
                 name: 'make',
@@ -175,15 +166,7 @@ export const INTIMATION_LEFT_SECTIONS = [
             { name: 'dateOfIncident', label: 'Date Of Incident', type: 'date', placeholder: '11 May 2025' },
             { name: 'timeOfIncident', label: 'Time Of Incident', type: 'time', placeholder: '10:45 AM' },
             { name: 'placeOfIncident', label: 'Place Of Incident', type: 'heading', full: true },
-            { name: 'incidentArea', label: 'Area', type: 'text', placeholder: 'Kolshet Road' },
-            {
-                name: 'incidentLandmark',
-                label: 'Nearest Landmark',
-                type: 'select',
-                placeholder: 'Dmart',
-                options: LANDMARK_OPTIONS,
-            },
-            { name: 'incidentCity', label: 'City', type: 'select', placeholder: 'Thane', options: CITY_OPTIONS },
+            { name: 'incidentArea', label: 'Area/Nearest Landmark', type: 'text', placeholder: 'Kolshet Road' },
             {
                 name: 'incidentState',
                 label: 'State',
@@ -191,6 +174,8 @@ export const INTIMATION_LEFT_SECTIONS = [
                 placeholder: 'Maharashtra',
                 options: STATE_OPTIONS,
             },
+            { name: 'incidentDistrict', label: 'Dist', type: 'select', placeholder: 'Thane', options: DISTRICT_OPTIONS },
+            { name: 'incidentCity', label: 'City', type: 'select', placeholder: 'Thane', options: CITY_OPTIONS },
             {
                 name: 'incidentPincode',
                 label: 'Pincode',
@@ -206,22 +191,22 @@ export const INTIMATION_LEFT_SECTIONS = [
                 options: COUNTRY_OPTIONS,
             },
             {
-                name: 'servicingOffice',
-                label: 'Servicing Office',
-                type: 'select',
-                placeholder: 'Motor/Fire/Marine/Cattle/Engg/MISC',
-                options: LOB_OPTIONS,
-            },
-            {
                 name: 'natureOfLoss',
                 label: 'Nature Of Loss',
                 type: 'select',
-                placeholder: 'Motor/Fire/Marine/Cattle/Engg/MISC',
-                options: LOB_OPTIONS,
+                placeholder: 'Accidental External Means',
+                options: NATURE_OF_LOSS_OPTIONS,
+            },
+            {
+                name: 'servicingOffice',
+                label: 'IBima Servicing Branch',
+                type: 'select',
+                placeholder: 'Select Branch',
+                options: SERVICING_BRANCH_OPTIONS,
             },
             {
                 name: 'briefDescription',
-                label: 'Breif Description',
+                label: 'Brief Description',
                 type: 'textarea',
                 placeholder: 'Vehicle Hit By Another Vehicle',
                 rows: 3,
@@ -254,21 +239,15 @@ export const INTIMATION_RIGHT_SECTIONS = [
         title: 'Driver Details',
         fields: [
             { name: 'driverInjured', label: 'Driver Injured?', type: 'checkbox', options: YES_NO, full: true },
-            { name: 'driverName', label: 'Driver Name', type: 'text', placeholder: 'Demo Insurance Co' },
+            { name: 'driverName', label: 'Driver Name', type: 'text', placeholder: 'Driver Full Name' },
             {
                 name: 'drivingLicenseNumber',
                 label: 'Driving License Number',
                 type: 'text',
                 placeholder: 'MH 12 78GLA25897GH',
             },
-            { name: 'driverDob', label: 'Date Of Birth', type: 'text', placeholder: 'Drivermailid@Gmail.Com' },
-            {
-                name: 'licenseIssueDate',
-                label: 'Issue Date',
-                type: 'select',
-                placeholder: 'Self/Relative/Paid Driver/Others',
-                options: opts('Self', 'Relative', 'Paid Driver', 'Others'),
-            },
+            { name: 'driverDob', label: 'Date Of Birth', type: 'date', placeholder: 'DD-MM-YYYY' },
+            { name: 'licenseIssueDate', label: 'Issue Date', type: 'date', placeholder: 'DD-MM-YYYY' },
             {
                 name: 'validClass',
                 label: 'Valid Class',
@@ -277,20 +256,8 @@ export const INTIMATION_RIGHT_SECTIONS = [
                 extraInput: { name: 'validClassOther', placeholder: 'Tractor' },
                 full: true,
             },
-            {
-                name: 'validFrom',
-                label: 'Valid From',
-                type: 'select',
-                placeholder: 'Self/Relative/Paid Driver/Others',
-                options: opts('Self', 'Relative', 'Paid Driver', 'Others'),
-            },
-            {
-                name: 'validUpto',
-                label: 'Valid Upto',
-                type: 'select',
-                placeholder: 'None/Minor/Major/Fatal',
-                options: opts('None', 'Minor', 'Major', 'Fatal'),
-            },
+            { name: 'validFrom', label: 'Valid From', type: 'date', placeholder: 'DD-MM-YYYY' },
+            { name: 'validUpto', label: 'Valid Upto', type: 'date', placeholder: 'DD-MM-YYYY' },
         ],
     },
     {
@@ -313,15 +280,9 @@ export const INTIMATION_RIGHT_SECTIONS = [
                 placeholder: 'B-99,Sector-63, Noida UP- 201301',
             },
             { name: 'contactPersonName', label: 'Contact Person Name', type: 'text', placeholder: 'Raju' },
-            { name: 'workshopArea', label: 'Area', type: 'text', placeholder: 'Kolshet Road' },
-            {
-                name: 'workshopLandmark',
-                label: 'Nearest Landmark',
-                type: 'select',
-                placeholder: 'Dmart',
-                options: LANDMARK_OPTIONS,
-            },
+            { name: 'workshopArea', label: 'Nearest Landmark/Area', type: 'text', placeholder: 'Kolshet Road' },
             { name: 'workshopCity', label: 'City', type: 'select', placeholder: 'Thane', options: CITY_OPTIONS },
+            { name: 'workshopDistrict', label: 'Dist', type: 'select', placeholder: 'Thane', options: DISTRICT_OPTIONS },
             {
                 name: 'workshopState',
                 label: 'State',
@@ -348,17 +309,17 @@ export const INTIMATION_RIGHT_SECTIONS = [
     {
         key: 'fir-injury',
         title: 'FIR & Injury Details',
-        columns: 3,
+        columns: 6,
         fields: [
-            { name: 'anyInjury', label: 'Any Injury?', type: 'checkbox', options: YES_NO },
-            { name: 'anyFatality', label: 'Any Fatality?', type: 'checkbox', options: YES_NO },
-            { name: 'thirdPartyInvolved', label: '3rd Party Involved', type: 'checkbox', options: YES_NO },
-            { name: 'personsInjured', label: 'No Of Persons Injured', type: 'text', placeholder: '01' },
-            { name: 'injuryDetails', label: 'Injury Details', type: 'text', placeholder: 'Minor' },
-            { name: 'policeReport', label: 'Police Report', type: 'checkbox', options: YES_NO },
-            { name: 'personsDeceased', label: 'No Of Personas Deceased', type: 'text', placeholder: '0' },
-            { name: 'policeStation', label: 'Police Station', type: 'text', placeholder: 'Police Station Name' },
-            { name: 'firNo', label: 'FIR No', type: 'text', placeholder: 'CLM-250501-1021' },
+            { span: 2, name: 'anyInjury', label: 'Any Injury?', type: 'checkbox', options: YES_NO },
+            { span: 2, name: 'anyFatality', label: 'Any Fatality?', type: 'checkbox', options: YES_NO },
+            { span: 2, name: 'thirdPartyInvolved', label: '3rd Party Involved', type: 'checkbox', options: YES_NO },
+            { span: 3, name: 'personsInjured', label: 'No Of Persons Injured', type: 'text', placeholder: '01' },
+            { span: 3, name: 'injuryDetails', label: 'Injury Details', type: 'text', placeholder: 'Minor' },
+            { span: 3, name: 'policeReport', label: 'Police Report', type: 'checkbox', options: YES_NO },
+            { span: 3, name: 'personsDeceased', label: 'No Of Persons Deceased', type: 'text', placeholder: '0' },
+            { span: 3, name: 'policeStation', label: 'Police Station', type: 'text', placeholder: 'Police Station Name' },
+            { span: 3, name: 'firNo', label: 'FIR No', type: 'text', placeholder: 'CLM-250501-1021' },
             {
                 name: 'firRemarks',
                 label: 'Remarks (If Any)',

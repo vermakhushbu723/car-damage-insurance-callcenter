@@ -25,11 +25,18 @@ const STATUS_OPTIONS = [
 ];
 const STAGE_TONE = { completed: 'bg-emerald-100 text-emerald-700', intimation: 'bg-slate-100 text-slate-600' };
 
-/**
- * All Claims (every claim) and New/Assigned (claims allocated to me + the
- * last 24 hours' intimations). Clicking a claim opens it on its next step.
- */
-export default function ClaimsListPage({ mode = 'all' }) {
+/** My Claims lists; `view` is GET /claims?view= (the dashboard KPI tiles), "all" = View Claim. */
+const VIEWS = {
+    total: { title: 'Total Intimation', subtitle: 'All Time Registered Intimations' },
+    new: { title: 'New Intimations', subtitle: 'Intimations Registered In The Last 24 Hours' },
+    pending: { title: 'Pending Allocation', subtitle: 'Open Claims Awaiting Handler Assignment' },
+    link: { title: 'Link Sent', subtitle: 'Claims Whose Survey Link Has Been Sent' },
+    all: { title: 'View Claim', subtitle: 'Search Any Claim And Open It On Its Next Step' },
+};
+
+/** One My Claims list. Clicking a claim opens it on its next step. */
+export default function ClaimsListPage({ view = 'all' }) {
+    const config = VIEWS[view] ?? VIEWS.all;
     const navigate = useNavigate();
     const { message } = App.useApp();
     const { selectClaim, can } = useAppState();
@@ -47,16 +54,16 @@ export default function ClaimsListPage({ mode = 'all' }) {
             if (search) q.set('search', search);
             if (stage) q.set('stage', stage);
             if (status) q.set('status', status);
-            if (mode === 'mine') q.set('mine', '1');
+            if (view !== 'all') q.set('view', view);
             api.get(`/claims?${q}`)
                 .then(setData)
                 .catch((err) => message.error(errText(err)))
                 .finally(() => setLoading(false));
         }, 250);
         return () => clearTimeout(t);
-    }, [search, stage, status, page, mode, message]);
+    }, [search, stage, status, page, view, message]);
 
-    useEffect(() => setPage(1), [search, stage, status, mode]);
+    useEffect(() => setPage(1), [search, stage, status, view]);
 
     const open = (row) => {
         selectClaim(row.id);
@@ -90,6 +97,7 @@ export default function ClaimsListPage({ mode = 'all' }) {
                 </span>
             ),
         },
+        ...(view === 'link' ? [{ title: header('Link Sent On'), dataIndex: 'linkSentAt', key: 'linkSentAt', render: (v) => cell(v && fmtDateTime(v)) }] : []),
         { title: header('Claim Amount'), dataIndex: 'amount', key: 'amount', align: 'right', render: (v) => cell(v ? `₹${formatINR(v)}` : '') },
         {
             title: header('Priorty'),
@@ -103,9 +111,9 @@ export default function ClaimsListPage({ mode = 'all' }) {
     return (
         <div className="flex flex-col gap-4">
             <div>
-                <h1 className="mb-0.5 text-[20px] leading-7 font-bold text-[#1450d8]">{mode === 'mine' ? 'New/Assigned' : 'All Claims'}</h1>
+                <h1 className="mb-0.5 text-[20px] leading-7 font-bold text-[#1450d8]">{config.title}</h1>
                 <p className="mb-0 text-[13.5px] font-bold text-slate-900">
-                    {mode === 'mine' ? 'Claims Allocated To You And New Intimations (Last 24 Hours)' : 'Every Claim In The Portal'}
+                    {config.subtitle}
                 </p>
             </div>
 

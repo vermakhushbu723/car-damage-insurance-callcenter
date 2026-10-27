@@ -388,15 +388,15 @@ function ClaimActionBar({ claim }) {
 }
 
 /** Shown on a claim screen while no claim is open. */
-export function NoClaim({ text = 'Select a claim to work on it here (or open one from the Dashboard / All Claims).', stage }) {
+export function NoClaim({ text = 'Select a claim to work on it here (or open one from the Dashboard / View Claim).', stage }) {
     const navigate = useNavigate();
     return (
         <section className="flex flex-col items-center rounded-xl border border-slate-200 bg-white px-6 py-14 text-center">
             <Empty description={text} />
             <div className="mt-3 flex flex-wrap justify-center gap-3">
                 <ClaimPicker stage={stage} />
-                <Button type="primary" onClick={() => navigate(ROUTES.allClaims)}>
-                    All Claims
+                <Button type="primary" onClick={() => navigate(ROUTES.viewClaim)}>
+                    View Claim
                 </Button>
             </div>
         </section>

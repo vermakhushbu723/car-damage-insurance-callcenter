@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { App, Badge, Select, Table, Tooltip } from 'antd';
-import { BellOutlined, FilterOutlined, MenuOutlined, UserOutlined } from '@ant-design/icons';
+import { App, Select, Table } from 'antd';
+import { FilterOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 
@@ -133,7 +133,7 @@ function DonutCard({ title, items, colors, total, centerLabel }) {
 export default function AnalyticsPage() {
     const navigate = useNavigate();
     const { message } = App.useApp();
-    const { user, selectClaim } = useAppState();
+    const { selectClaim } = useAppState();
     const [days, setDays] = useState(7);
     const [filters, setFilters] = useState(EMPTY_FILTERS);
     const [filtersOpen, setFiltersOpen] = useState(false);
@@ -191,29 +191,15 @@ export default function AnalyticsPage() {
 
     return (
         <div className="flex flex-col gap-4">
-            <header className="flex items-center gap-4 rounded-xl bg-[#83a2e3] px-5 py-3">
-                <button type="button" aria-label="Back to dashboard" onClick={() => navigate(ROUTES.dashboard)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#1450d8]">
-                    <MenuOutlined />
-                </button>
-                <h1 className="mb-0 flex-1 text-[16px] font-semibold text-white">call center / csm dashboard</h1>
-                <Tooltip title="Quick Filters">
-                    <button type="button" onClick={() => setFiltersOpen(true)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#1450d8]">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <h1 className="mb-0 text-[20px] leading-7 font-bold text-[#1450d8]">Call Center / CSM Dashboard</h1>
+                <button type="button" onClick={() => setFiltersOpen(true)} className="flex items-center gap-2 text-[12px] font-semibold text-slate-700">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1450d8] text-white">
                         <FilterOutlined />
-                    </button>
-                </Tooltip>
-                <Tooltip title="Pending allocation">
-                    <Badge count={dash?.stats.pendingAllocation.value ?? 0} size="small">
-                        <button type="button" onClick={() => navigate(ROUTES.dashboard)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#1450d8]">
-                            <BellOutlined />
-                        </button>
-                    </Badge>
-                </Tooltip>
-                <Tooltip title={user ? `${user.name} · ${user.roleName}` : ''}>
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#1450d8]">
-                        <UserOutlined />
                     </span>
-                </Tooltip>
-            </header>
+                    Quick Filters
+                </button>
+            </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {kpis.map((stat) => (
