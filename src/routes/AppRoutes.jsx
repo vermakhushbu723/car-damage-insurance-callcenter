@@ -22,6 +22,16 @@ import LoginPage from '../pages/auth/LoginPage.jsx';
 import { useAppState } from '../context/AppContext.jsx';
 import { needsRolePick } from '../auth/session.js';
 import { flattenNav } from '../constants/navigation.js';
+import { NM_ROUTES, isNationalManager } from '../constants/nationalManager.js';
+import NmDashboardPage from '../pages/national/NmDashboardPage.jsx';
+import NmApprovalsPage from '../pages/national/NmApprovalsPage.jsx';
+import NmInboxPage from '../pages/national/NmInboxPage.jsx';
+import NmSearchClaimsPage from '../pages/national/NmSearchClaimsPage.jsx';
+import NmClaimProcessPage from '../pages/national/NmClaimProcessPage.jsx';
+import { NmBranchesPage, NmRolesPage, NmSurveyorsPage, NmUsersPage } from '../pages/national/NmManagementPages.jsx';
+import NmWorkshopPage from '../pages/national/NmWorkshopPage.jsx';
+import { NmAuditPage, NmFraudPage, NmTatMonitorPage } from '../pages/national/NmReportsPages.jsx';
+import NmSystemPage from '../pages/national/NmSystemPage.jsx';
 import ROUTES from '../constants/routes.js';
 
 /** Screens that are built. Everything else in the rail gets a placeholder. */
@@ -48,6 +58,28 @@ const PAGES = {
     [ROUTES.communicationHistory]: <CommunicationHistoryPage />,
 };
 
+/** Screens of the National Manager role; any other role goes back to its own home. */
+const NM_PAGES = {
+    [NM_ROUTES.approvals]: <NmApprovalsPage />,
+    [NM_ROUTES.inbox]: <NmInboxPage />,
+    [NM_ROUTES.searchClaims]: <NmSearchClaimsPage />,
+    [NM_ROUTES.claimProcess]: <NmClaimProcessPage />,
+    [NM_ROUTES.users]: <NmUsersPage />,
+    [NM_ROUTES.roles]: <NmRolesPage />,
+    [NM_ROUTES.branches]: <NmBranchesPage />,
+    [NM_ROUTES.surveyors]: <NmSurveyorsPage />,
+    [NM_ROUTES.workshop]: <NmWorkshopPage />,
+    [NM_ROUTES.tatMonitor]: <NmTatMonitorPage />,
+    [NM_ROUTES.fraud]: <NmFraudPage />,
+    [NM_ROUTES.audit]: <NmAuditPage />,
+    [NM_ROUTES.system]: <NmSystemPage />,
+};
+
+function RequireNationalManager({ children }) {
+    const { user } = useAppState();
+    return isNationalManager(user) ? children : <Navigate to={ROUTES.dashboard} replace />;
+}
+
 /** Signed-in users only; everyone else goes to /login and comes back after. */
 function RequireAuth({ children }) {
     const { user } = useAppState();
@@ -58,7 +90,9 @@ function RequireAuth({ children }) {
 
 /** The role must be allowed to view the page's module (Admin > Roles & Permissions). */
 function Guard({ item, children }) {
-    const { can } = useAppState();
+    const { can, user } = useAppState();
+    // Same "/" for every role: the National Manager gets its own dashboard there.
+    if (item.path === ROUTES.dashboard && isNationalManager(user)) return <NmDashboardPage />;
     return can(item.module) ? children : <NoAccess title={item.label} />;
 }
 
@@ -83,6 +117,9 @@ export default function AppRoutes() {
                         path={item.path}
                         element={<Guard item={item}>{PAGES[item.path] || <PlaceholderPage title={item.label} />}</Guard>}
                     />
+                ))}
+                {Object.entries(NM_PAGES).map(([path, page]) => (
+                    <Route key={path} path={path} element={<RequireNationalManager>{page}</RequireNationalManager>} />
                 ))}
             </Route>
 

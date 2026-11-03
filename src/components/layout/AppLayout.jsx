@@ -4,6 +4,9 @@ import { Outlet } from 'react-router-dom';
 
 import Sidebar, { SIDEBAR_WIDTH } from './Sidebar.jsx';
 import TopBar from './TopBar.jsx';
+import NmSidebar, { NM_SIDEBAR_WIDTH } from '../national/NmSidebar.jsx';
+import { isNationalManager } from '../../constants/nationalManager.js';
+import { useAppState } from '../../context/AppContext.jsx';
 import { useIsTablet } from '../../hooks/useMediaQuery.js';
 import useLocalStorage from '../../hooks/useLocalStorage.js';
 
@@ -13,6 +16,10 @@ import useLocalStorage from '../../hooks/useLocalStorage.js';
  */
 export default function AppLayout() {
     const isTablet = useIsTablet();
+    const { user } = useAppState();
+    // The National Manager has its own rail; every other role keeps the call center one.
+    const nm = isNationalManager(user);
+    const Rail = nm ? NmSidebar : Sidebar;
     const [drawerOpen, setDrawerOpen] = useState(false);
     // Open by default – the user's own choice is remembered for the next visit.
     const [collapsed, setCollapsed] = useLocalStorage('sidebar-collapsed', false);
@@ -23,7 +30,7 @@ export default function AppLayout() {
                 automatically when it is collapsed or expanded. */}
             {!isTablet ? (
                 <div className="sticky top-0 h-screen shrink-0">
-                    <Sidebar collapsed={collapsed} />
+                    <Rail collapsed={collapsed} />
                 </div>
             ) : null}
 
@@ -37,13 +44,13 @@ export default function AppLayout() {
 
             <Drawer
                 placement="left"
-                size={SIDEBAR_WIDTH}
+                size={nm ? NM_SIDEBAR_WIDTH : SIDEBAR_WIDTH}
                 open={drawerOpen}
                 onClose={() => setDrawerOpen(false)}
                 closable={false}
-                styles={{ body: { padding: 0, background: '#1a47c8' } }}
+                styles={{ body: { padding: 0, background: nm ? '#0b4fc9' : '#1a47c8' } }}
             >
-                <Sidebar onClose={() => setDrawerOpen(false)} onNavigate={() => setDrawerOpen(false)} />
+                <Rail onClose={() => setDrawerOpen(false)} onNavigate={() => setDrawerOpen(false)} />
             </Drawer>
         </div>
     );

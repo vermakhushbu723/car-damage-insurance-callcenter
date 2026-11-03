@@ -17,19 +17,19 @@ export function LogoMark({ className = '' }) {
 }
 
 /** IBima Assist wordmark used in the blue application bar. */
-export default function Logo({ className = '' }) {
+export default function Logo({ className = '', subtitle = 'Claim Managment', onDark = false }) {
     return (
         <div className={cn('flex items-center gap-2', className)}>
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-[#1450d8]">
                 <LogoMark className="h-5 w-5" />
             </span>
             <span className="leading-tight">
-                <span className="block text-[11.5px] font-bold tracking-wide text-[#0b2f7a]">
+                <span className={cn('block text-[11.5px] font-bold tracking-wide', onDark ? 'text-white' : 'text-[#0b2f7a]')}>
                     IBima <span className="text-orange-500">Assist</span>
                 </span>
-                <span className="block text-[9px] font-semibold tracking-[0.1em] text-[#0b2f7a]">
-                    Claim Managment
-                </span>
+                {subtitle ? (
+                    <span className={cn('block text-[9px] font-semibold tracking-[0.1em]', onDark ? 'text-white' : 'text-[#0b2f7a]')}>{subtitle}</span>
+                ) : null}
             </span>
         </div>
     );

@@ -5,6 +5,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { TOP_NAV_ITEMS, landingFor } from '../../constants/navigation.js';
 import { can, logout, switchRole } from '../../auth/session.js';
 import { useAppState } from '../../context/AppContext.jsx';
+import { isNationalManager } from '../../constants/nationalManager.js';
 import Logo from '../common/Logo.jsx';
 
 function NavPill({ item }) {
@@ -59,7 +60,7 @@ export default function TopBar({ onMenuClick }) {
                 </button>
 
                 <button type="button" onClick={() => navigate('/')} className="shrink-0 cursor-pointer">
-                    <Logo />
+                    <Logo subtitle={isNationalManager(user) ? user.roleName : undefined} />
                 </button>
 
                 <nav className="ml-auto hidden items-center gap-2 lg:flex">
