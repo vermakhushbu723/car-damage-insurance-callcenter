@@ -3,9 +3,8 @@ import { App, Avatar, Dropdown, Form, Input, Modal, Tooltip } from 'antd';
 import { CloseOutlined, DownOutlined, UserOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { changePassword, can, logout, switchRole } from '../../auth/session.js';
-import { landingFor } from '../../constants/navigation.js';
-import { NM_NAV } from '../../constants/nationalManager.js';
+import { changePassword, logout, switchRole } from '../../auth/session.js';
+import { NM_NAV, landingForUser } from '../../constants/nationalManager.js';
 import ROUTES from '../../constants/routes.js';
 import { useAppState } from '../../context/AppContext.jsx';
 import { errText, fmtDateTime } from '../../utils/format.js';
@@ -68,7 +67,7 @@ export default function NmSidebar({ collapsed = false, onNavigate, onClose }) {
         try {
             const next = await switchRole(roleKey);
             message.success(`Switched to ${next.roleName}`);
-            navigate(landingFor((m) => can(next, m)), { replace: true });
+            navigate(landingForUser(next), { replace: true });
         } catch (err) {
             message.error(errText(err));
         }

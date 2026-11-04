@@ -15,6 +15,8 @@ import {
     UserSwitchOutlined,
 } from '@ant-design/icons';
 
+import { can } from '../auth/session.js';
+import { landingFor } from './navigation.js';
 import ROUTES from './routes.js';
 
 /**
@@ -24,6 +26,9 @@ import ROUTES from './routes.js';
  */
 export const NM_ROLE_KEY = 'national-manager';
 export const isNationalManager = (user) => user?.roleKey === NM_ROLE_KEY;
+
+/** Where `user` lands after picking a role: that role's dashboard. */
+export const landingForUser = (user) => (isNationalManager(user) ? ROUTES.dashboard : landingFor((m) => can(user, m)));
 
 export const NM_ROUTES = {
     dashboard: ROUTES.dashboard,

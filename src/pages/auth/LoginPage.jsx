@@ -5,8 +5,8 @@ import { CheckCircleFilled, LockOutlined, ReloadOutlined, UserOutlined } from '@
 
 import loginImage from '../../assets/images/loginHero.jpg';
 import ibimaLogo from '../../assets/images/ibimaLogo.svg';
-import { can, changePassword, getUser, login, logout, needsRolePick, switchRole } from '../../auth/session.js';
-import { landingFor } from '../../constants/navigation.js';
+import { changePassword, getUser, login, logout, needsRolePick, switchRole } from '../../auth/session.js';
+import { landingForUser } from '../../constants/nationalManager.js';
 import ROUTES from '../../constants/routes.js';
 
 // Same look as the Admin portal's sign-in. Accounts are created there
@@ -45,16 +45,21 @@ export default function LoginPage() {
     const [newPassword, setNewPassword] = useState('');
     const [confirm, setConfirm] = useState('');
 
-    // Step 3 for a user with several roles: pick the one to work in.
+    // Last step of every sign-in: pick the role to work in. A single role is
+    // already highlighted; with several, the user has to choose one.
+    const preselected = () => {
+        const roles = getUser()?.roles ?? [];
+        return roles.length === 1 ? roles[0].roleKey : null;
+    };
     const [pickRole, setPickRole] = useState(() => !getUser()?.mustChangePassword && needsRolePick());
-    const [roleKey, setRoleKey] = useState(() => getUser()?.roleKey ?? null);
+    const [roleKey, setRoleKey] = useState(preselected);
 
     const target = location.state?.from ?? ROUTES.dashboard;
 
-    /** Signed in: pick a role first when there are several, else go in. */
+    /** Signed in: pick the role first, then go in. */
     const enter = () => {
         if (needsRolePick()) {
-            setRoleKey(getUser()?.roleKey ?? null);
+            setRoleKey(preselected());
             setPickRole(true);
             return;
         }
@@ -68,7 +73,7 @@ export default function LoginPage() {
         try {
             const user = await switchRole(roleKey);
             message.success(`Welcome, ${user.name} · ${user.roleName}`);
-            navigate(landingFor((m) => can(user, m)), { replace: true });
+            navigate(landingForUser(user), { replace: true });
         } catch (err) {
             setError(err.message);
         } finally {
@@ -156,8 +161,8 @@ export default function LoginPage() {
                         <>
                             <h1 className="m-0 text-lg font-bold text-slate-900">Select your role</h1>
                             <p className="mt-0.5 mb-3 text-[12px] text-slate-900">
-                                Hi {getUser()?.name}, your account has more than one role. Choose the one to work in — the menu and dashboard follow
-                                it. You can switch any time from the top bar.
+                                Hi {getUser()?.name}, choose the role to work in — the menu and dashboard follow it.
+                                {(getUser()?.roles?.length ?? 0) > 1 ? ' You can switch any time from the top bar.' : ''}
                             </p>
                             <div role="radiogroup" aria-label="Roles" className="flex flex-col gap-2">
                                 {(getUser()?.roles ?? []).map((r) => {

@@ -38,15 +38,15 @@ export function onSessionChange(fn) {
 /** Signs in with User ID or email; throws ApiError with the server's reason. */
 export async function login(identifier, password) {
     const data = await api.post('/auth/login', { identifier: identifier.trim(), password }, { auth: false });
-    // A user with several roles (Admin > Create Users) picks one before entering.
-    write({ token: data.token, user: data.user, expiresAt: Date.now() + data.expiresIn * 1000, roleChosen: !(data.user.roles?.length > 1) });
+    // Every sign-in picks the role to work in (roles come from Admin > Create Users).
+    write({ token: data.token, user: data.user, expiresAt: Date.now() + data.expiresIn * 1000, roleChosen: false });
     return data.user;
 }
 
-/** Signed in with several roles but none picked yet? */
+/** Signed in but no role picked yet? */
 export const needsRolePick = () => {
     const s = read();
-    return !!s && !s.roleChosen && s.user?.roles?.length > 1;
+    return !!s && !s.roleChosen && s.user?.roles?.length > 0;
 };
 
 /** Works in another of the user's roles: new session, menu + permissions follow. */

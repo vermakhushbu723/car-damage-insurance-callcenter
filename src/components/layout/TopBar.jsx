@@ -2,10 +2,10 @@ import { App, Avatar, Dropdown, Tooltip } from 'antd';
 import { DownOutlined, LogoutOutlined, MenuOutlined, SwapOutlined, UserOutlined } from '@ant-design/icons';
 import { NavLink, useNavigate } from 'react-router-dom';
 
-import { TOP_NAV_ITEMS, landingFor } from '../../constants/navigation.js';
-import { can, logout, switchRole } from '../../auth/session.js';
+import { TOP_NAV_ITEMS } from '../../constants/navigation.js';
+import { logout, switchRole } from '../../auth/session.js';
 import { useAppState } from '../../context/AppContext.jsx';
-import { isNationalManager } from '../../constants/nationalManager.js';
+import { isNationalManager, landingForUser } from '../../constants/nationalManager.js';
 import Logo from '../common/Logo.jsx';
 
 function NavPill({ item }) {
@@ -36,7 +36,7 @@ export default function TopBar({ onMenuClick }) {
         try {
             const next = await switchRole(key);
             message.success(`Switched to ${next.roleName}`);
-            navigate(landingFor((m) => can(next, m)), { replace: true });
+            navigate(landingForUser(next), { replace: true });
         } catch (err) {
             message.error(err.message);
         }
