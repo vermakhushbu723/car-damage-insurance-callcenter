@@ -30,6 +30,10 @@ export const isNationalManager = (user) => user?.roleKey === NM_ROLE_KEY;
 /** Where `user` lands after picking a role: that role's dashboard. */
 export const landingForUser = (user) => (isNationalManager(user) ? ROUTES.dashboard : landingFor((m) => can(user, m)));
 
+/** Claim Handler (Figma: CHM DASHBOARDS SCREENS AS FOR SERVICE PROVIDER). */
+export const CH_ROLE_KEY = 'claim-handler';
+export const isClaimHandler = (user) => user?.roleKey === CH_ROLE_KEY;
+
 export const NM_ROUTES = {
     dashboard: ROUTES.dashboard,
     approvals: '/nm/approvals',

@@ -22,7 +22,8 @@ import LoginPage from '../pages/auth/LoginPage.jsx';
 import { useAppState } from '../context/AppContext.jsx';
 import { needsRolePick } from '../auth/session.js';
 import { flattenNav } from '../constants/navigation.js';
-import { NM_ROUTES, isNationalManager } from '../constants/nationalManager.js';
+import { NM_ROUTES, isClaimHandler, isNationalManager } from '../constants/nationalManager.js';
+import ChDashboardPage from '../pages/handler/ChDashboardPage.jsx';
 import NmDashboardPage from '../pages/national/NmDashboardPage.jsx';
 import NmApprovalsPage from '../pages/national/NmApprovalsPage.jsx';
 import NmInboxPage from '../pages/national/NmInboxPage.jsx';
@@ -93,6 +94,7 @@ function Guard({ item, children }) {
     const { can, user } = useAppState();
     // Same "/" for every role: the National Manager gets its own dashboard there.
     if (item.path === ROUTES.dashboard && isNationalManager(user)) return <NmDashboardPage />;
+    if (item.path === ROUTES.dashboard && isClaimHandler(user) && can(item.module)) return <ChDashboardPage />;
     return can(item.module) ? children : <NoAccess title={item.label} />;
 }
 

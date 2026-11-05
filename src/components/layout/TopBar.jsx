@@ -1,11 +1,12 @@
 import { App, Avatar, Dropdown, Tooltip } from 'antd';
-import { DownOutlined, LogoutOutlined, MenuOutlined, SwapOutlined, UserOutlined } from '@ant-design/icons';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { BellOutlined, DownOutlined, FilterOutlined, LogoutOutlined, MenuOutlined, SwapOutlined, UserOutlined } from '@ant-design/icons';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 import { TOP_NAV_ITEMS } from '../../constants/navigation.js';
 import { logout, switchRole } from '../../auth/session.js';
 import { useAppState } from '../../context/AppContext.jsx';
-import { isNationalManager, landingForUser } from '../../constants/nationalManager.js';
+import { isClaimHandler, isNationalManager, landingForUser } from '../../constants/nationalManager.js';
+import ROUTES from '../../constants/routes.js';
 import Logo from '../common/Logo.jsx';
 
 function NavPill({ item }) {
@@ -46,6 +47,48 @@ export default function TopBar({ onMenuClick }) {
         logout();
         navigate('/login', { replace: true });
     };
+
+    const { pathname } = useLocation();
+
+    // Claim Handler dashboard (Figma): title + filter, bell and profile only.
+    if (isClaimHandler(user) && pathname === ROUTES.dashboard) {
+        const round = 'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/85 text-slate-700 transition hover:bg-white';
+        const profileMenu = {
+            items: [
+                { key: 'account', label: 'My Account' },
+                ...(roles.length > 1 ? [{ key: 'switch', label: 'Switch Role', children: roles.map((r) => ({ key: `role:${r.roleKey}`, label: r.roleName })) }] : []),
+                { key: 'logout', label: 'Log Out' },
+            ],
+            onClick: ({ key }) => {
+                if (key.startsWith('role:')) return changeRole({ key: key.slice(5) });
+                if (key === 'account') return navigate(ROUTES.myAccount);
+                return signOut();
+            },
+        };
+        return (
+            <header className="sticky top-0 z-40 bg-[#83a2e3]">
+                <div className="flex h-[64px] items-center gap-3 px-3 sm:px-5">
+                    <button type="button" aria-label="Toggle menu" onClick={onMenuClick} className={round}>
+                        <MenuOutlined />
+                    </button>
+                    <h1 className="m-0 min-w-0 flex-1 truncate text-[16px] font-semibold text-white sm:text-[18px]">Claim Handler Dashboard (Processing)</h1>
+                    <button type="button" aria-label="Quick filters" onClick={() => navigate('?quickFilters=1')} className={round}>
+                        <FilterOutlined />
+                    </button>
+                    <Tooltip title="Notifications are not connected yet">
+                        <button type="button" aria-label="Notifications" className={round}>
+                            <BellOutlined />
+                        </button>
+                    </Tooltip>
+                    <Dropdown menu={profileMenu} trigger={['click']}>
+                        <button type="button" aria-label="Profile menu" className={round}>
+                            <UserOutlined />
+                        </button>
+                    </Dropdown>
+                </div>
+            </header>
+        );
+    }
 
     return (
         <header className="sticky top-0 z-40 bg-[#83a2e3]">
