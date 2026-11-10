@@ -34,6 +34,10 @@ export const landingForUser = (user) => (isNationalManager(user) ? ROUTES.dashbo
 export const CH_ROLE_KEY = 'claim-handler';
 export const isClaimHandler = (user) => user?.roleKey === CH_ROLE_KEY;
 
+/** State / Regional Claim Managers (Figma: SCM/RCM DASHBOARD SCREENS AS FOR SERVICE PROVIDER). */
+export const APPROVER_ROLE_KEYS = ['state-manager', 'regional-manager'];
+export const isApprover = (user) => APPROVER_ROLE_KEYS.includes(user?.roleKey);
+
 export const NM_ROUTES = {
     dashboard: ROUTES.dashboard,
     approvals: '/nm/approvals',

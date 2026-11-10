@@ -5,7 +5,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { TOP_NAV_ITEMS } from '../../constants/navigation.js';
 import { logout, switchRole } from '../../auth/session.js';
 import { useAppState } from '../../context/AppContext.jsx';
-import { isClaimHandler, isNationalManager, landingForUser } from '../../constants/nationalManager.js';
+import { isApprover, isClaimHandler, isNationalManager, landingForUser } from '../../constants/nationalManager.js';
 import ROUTES from '../../constants/routes.js';
 import Logo from '../common/Logo.jsx';
 
@@ -50,8 +50,9 @@ export default function TopBar({ onMenuClick }) {
 
     const { pathname } = useLocation();
 
-    // Claim Handler dashboard (Figma): title + filter, bell and profile only.
-    if (isClaimHandler(user) && pathname === ROUTES.dashboard) {
+    // Claim Handler and SCM / RCM dashboards (Figma): title + filter, bell and profile only.
+    const dashboardTitle = isClaimHandler(user) ? 'Claim Handler Dashboard (Processing)' : isApprover(user) ? 'SCM / RCM & Approver Dashboards' : null;
+    if (dashboardTitle && pathname === ROUTES.dashboard) {
         const round = 'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/85 text-slate-700 transition hover:bg-white';
         const profileMenu = {
             items: [
@@ -71,7 +72,7 @@ export default function TopBar({ onMenuClick }) {
                     <button type="button" aria-label="Toggle menu" onClick={onMenuClick} className={round}>
                         <MenuOutlined />
                     </button>
-                    <h1 className="m-0 min-w-0 flex-1 truncate text-[16px] font-semibold text-white sm:text-[18px]">Claim Handler Dashboard (Processing)</h1>
+                    <h1 className="m-0 min-w-0 flex-1 truncate text-[16px] font-semibold text-white sm:text-[18px]">{dashboardTitle}</h1>
                     <button type="button" aria-label="Quick filters" onClick={() => navigate('?quickFilters=1')} className={round}>
                         <FilterOutlined />
                     </button>
