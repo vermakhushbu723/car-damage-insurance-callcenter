@@ -1,4 +1,5 @@
 import { getToken, clearSession } from '../auth/session.js';
+import { loginUrl } from '../portal.js';
 
 // Same-origin by default: Vite (dev/preview) and nginx (production) proxy
 // /api to callcenter-service (ai-damage-assessment-service/panel-backends).
@@ -16,7 +17,7 @@ export class ApiError extends Error {
 function onUnauthorized(token) {
     if (!token) return;
     clearSession();
-    if (!window.location.pathname.startsWith('/login')) window.location.replace('/login?expired=1');
+    if (!/\/login$/.test(window.location.pathname)) window.location.replace(loginUrl({ expired: true }));
 }
 
 async function send(method, path, { body, headers = {}, auth = true, raw = false } = {}) {

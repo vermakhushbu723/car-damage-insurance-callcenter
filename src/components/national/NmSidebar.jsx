@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { changePassword, logout, switchRole } from '../../auth/session.js';
 import { NM_NAV, landingForUser } from '../../constants/nationalManager.js';
 import ROUTES from '../../constants/routes.js';
+import { goToRole, loginUrl } from '../../portal.js';
 import { useAppState } from '../../context/AppContext.jsx';
 import { errText, fmtDateTime } from '../../utils/format.js';
 import cn from '../../utils/cn.js';
@@ -67,7 +68,7 @@ export default function NmSidebar({ collapsed = false, onNavigate, onClose }) {
         try {
             const next = await switchRole(roleKey);
             message.success(`Switched to ${next.roleName}`);
-            navigate(landingForUser(next), { replace: true });
+            goToRole(navigate, { role: next.roleKey, id: next.id }, landingForUser(next));
         } catch (err) {
             message.error(errText(err));
         }
@@ -91,7 +92,7 @@ export default function NmSidebar({ collapsed = false, onNavigate, onClose }) {
                 return modal.info({ title: 'Last Login', content: user?.lastLogin ? fmtDateTime(user.lastLogin) : 'Not available', okText: 'Close' });
             }
             logout();
-            return navigate('/login', { replace: true });
+            return window.location.assign(loginUrl());
         },
     };
 

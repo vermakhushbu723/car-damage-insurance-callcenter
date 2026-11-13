@@ -11,7 +11,9 @@ const apiProxy = {
 };
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+    // Built for the website domain: assets + API under /apps/callcenter/ (see src/portal.js).
+    base: command === 'build' ? '/apps/callcenter/' : '/',
     plugins: [react(), tailwindcss()],
     resolve: {
         alias: {
@@ -27,4 +29,4 @@ export default defineConfig({
         port: 4190,
         proxy: apiProxy,
     },
-});
+}));

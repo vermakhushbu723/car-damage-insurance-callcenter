@@ -8,6 +8,7 @@ import ibimaLogo from '../../assets/images/ibimaLogo.svg';
 import { changePassword, getUser, login, logout, needsRolePick, switchRole } from '../../auth/session.js';
 import { landingForUser } from '../../constants/nationalManager.js';
 import ROUTES from '../../constants/routes.js';
+import { ON_SITE, goToRole, loginUrl } from '../../portal.js';
 
 // Same look as the Admin portal's sign-in. Accounts are created there
 // (Admin > Create Users); a temp password must be changed on first sign-in.
@@ -73,7 +74,7 @@ export default function LoginPage() {
         try {
             const user = await switchRole(roleKey);
             message.success(`Welcome, ${user.name} · ${user.roleName}`);
-            navigate(landingForUser(user), { replace: true });
+            goToRole(navigate, { role: user.roleKey, id: user.id }, landingForUser(user));
         } catch (err) {
             setError(err.message);
         } finally {
@@ -84,6 +85,12 @@ export default function LoginPage() {
 
     useEffect(() => {
         const u = getUser();
+        // On the website the sign-in form is the common login; this page only
+        // finishes it (new password, role).
+        if (ON_SITE && !u) {
+            window.location.replace(loginUrl({ expired: !!new URLSearchParams(location.search).get('expired') }));
+            return;
+        }
         if (u && !u.mustChangePassword && !needsRolePick()) navigate(target, { replace: true });
         else if (new URLSearchParams(location.search).get('expired')) setError('Your session has ended. Please sign in again.');
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -193,8 +200,10 @@ export default function LoginPage() {
                                 block
                                 onClick={() => {
                                     logout();
+                                    if (ON_SITE) return window.location.assign(loginUrl());
                                     setPickRole(false);
                                     setPassword('');
+                                    return undefined;
                                 }}
                             >
                                 Sign in as someone else
@@ -313,8 +322,10 @@ export default function LoginPage() {
                                     type="link"
                                     onClick={() => {
                                         logout();
+                                        if (ON_SITE) return window.location.assign(loginUrl());
                                         setMustChange(false);
                                         setPassword('');
+                                        return undefined;
                                     }}
                                 >
                                     Sign in as someone else
