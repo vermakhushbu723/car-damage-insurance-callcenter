@@ -1,5 +1,5 @@
 import { App, Avatar, Dropdown, Tooltip } from 'antd';
-import { BellOutlined, DownOutlined, FilterOutlined, LogoutOutlined, MenuOutlined, SwapOutlined, UserOutlined } from '@ant-design/icons';
+import { BellOutlined, CheckOutlined, DownOutlined, FilterOutlined, LogoutOutlined, MenuOutlined, SwapOutlined, UserOutlined } from '@ant-design/icons';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 import { TOP_NAV_ITEMS } from '../../constants/navigation.js';
@@ -25,6 +25,51 @@ function NavPill({ item }) {
     );
 }
 
+/**
+ * Profile menu (next to the bell): name + active role, the user's roles to switch
+ * to (a user created with several roles), My Account and Log Out.
+ */
+function profileMenuOf(user, roles, { onRole, onAccount, onLogout }) {
+    const roleItems = roles.length > 1
+        ? [{
+            type: 'group',
+            label: 'Switch Role',
+            children: roles.map((r) => ({
+                key: `role:${r.roleKey}`,
+                label: r.roleName,
+                icon: r.roleKey === user?.roleKey ? <CheckOutlined className="text-[#1450d8]" /> : <SwapOutlined className="opacity-40" />,
+            })),
+        }]
+        : [{ key: 'role-only', disabled: true, label: `Role: ${user?.roleName ?? '—'}` }];
+    return {
+        selectable: true,
+        selectedKeys: user ? [`role:${user.roleKey}`] : [],
+        items: [
+            {
+                key: 'who',
+                disabled: true,
+                label: (
+                    <div className="py-0.5 leading-tight">
+                        <div className="text-[13px] font-semibold text-slate-800">{user?.name ?? 'User'}</div>
+                        <div className="text-[11px] text-slate-500">{user?.roleName}{user?.userId ? ` · ${user.userId}` : ''}</div>
+                    </div>
+                ),
+            },
+            { type: 'divider' },
+            ...roleItems,
+            { type: 'divider' },
+            { key: 'account', icon: <UserOutlined />, label: 'My Account' },
+            { key: 'logout', icon: <LogoutOutlined />, label: 'Log Out', danger: true },
+        ],
+        onClick: ({ key }) => {
+            if (key.startsWith('role:')) return onRole(key.slice(5));
+            if (key === 'account') return onAccount();
+            if (key === 'logout') return onLogout();
+            return undefined;
+        },
+    };
+}
+
 /** Blue application bar that sits above the rail. */
 export default function TopBar({ onMenuClick }) {
     const navigate = useNavigate();
@@ -33,7 +78,7 @@ export default function TopBar({ onMenuClick }) {
     const roles = user?.roles ?? [];
 
     /** Works in another role: new session, then that role's dashboard. */
-    const changeRole = async ({ key }) => {
+    const changeRole = async (key) => {
         if (key === user.roleKey) return;
         try {
             const next = await switchRole(key);
@@ -50,23 +95,12 @@ export default function TopBar({ onMenuClick }) {
     };
 
     const { pathname } = useLocation();
+    const profileMenu = profileMenuOf(user, roles, { onRole: changeRole, onAccount: () => navigate(ROUTES.myAccount), onLogout: signOut });
 
     // Claim Handler and SCM / RCM dashboards (Figma): title + filter, bell and profile only.
     const dashboardTitle = isClaimHandler(user) ? 'Claim Handler Dashboard (Processing)' : isApprover(user) ? 'SCM / RCM & Approver Dashboards' : null;
     if (dashboardTitle && pathname === ROUTES.dashboard) {
         const round = 'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/85 text-slate-700 transition hover:bg-white';
-        const profileMenu = {
-            items: [
-                { key: 'account', label: 'My Account' },
-                ...(roles.length > 1 ? [{ key: 'switch', label: 'Switch Role', children: roles.map((r) => ({ key: `role:${r.roleKey}`, label: r.roleName })) }] : []),
-                { key: 'logout', label: 'Log Out' },
-            ],
-            onClick: ({ key }) => {
-                if (key.startsWith('role:')) return changeRole({ key: key.slice(5) });
-                if (key === 'account') return navigate(ROUTES.myAccount);
-                return signOut();
-            },
-        };
         return (
             <header className="sticky top-0 z-40 bg-[#83a2e3]">
                 <div className="flex h-[64px] items-center gap-3 px-3 sm:px-5">
@@ -82,8 +116,8 @@ export default function TopBar({ onMenuClick }) {
                             <BellOutlined />
                         </button>
                     </Tooltip>
-                    <Dropdown menu={profileMenu} trigger={['click']}>
-                        <button type="button" aria-label="Profile menu" className={round}>
+                    <Dropdown menu={profileMenu} trigger={['click']} placement="bottomRight">
+                        <button type="button" aria-label="Profile menu" title={user ? `${user.name} · ${user.roleName}` : 'Profile'} className={round}>
                             <UserOutlined />
                         </button>
                     </Dropdown>
@@ -115,46 +149,29 @@ export default function TopBar({ onMenuClick }) {
                 </nav>
 
                 <div className="ml-auto flex items-center gap-2 lg:ml-4">
-                    {roles.length > 1 ? (
-                        <Dropdown
-                            trigger={['click']}
-                            menu={{
-                                selectable: true,
-                                selectedKeys: [user.roleKey],
-                                onClick: changeRole,
-                                items: [
-                                    { type: 'group', label: 'Switch role', children: roles.map((r) => ({ key: r.roleKey, label: r.roleName })) },
-                                ],
-                            }}
+                    <Tooltip title="Notifications are not connected yet">
+                        <button
+                            type="button"
+                            aria-label="Notifications"
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#1450d8] transition hover:bg-white"
                         >
-                            <button
-                                type="button"
-                                aria-label="Switch role"
-                                className="flex h-8 items-center gap-1.5 rounded-full bg-white/85 px-3 text-[12px] font-semibold whitespace-nowrap text-[#1450d8] transition hover:bg-white"
-                            >
-                                <SwapOutlined />
-                                <span className="hidden sm:inline">{user.roleName}</span>
-                                <DownOutlined className="text-[9px]" />
-                            </button>
-                        </Dropdown>
-                    ) : null}
-                    <button
-                        type="button"
-                        aria-label="Logout"
-                        title="Logout"
-                        onClick={signOut}
-                        className="hidden h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#1450d8] transition hover:bg-white sm:flex"
-                    >
-                        <LogoutOutlined />
-                    </button>
-                    <Tooltip title={user ? `${user.roleName}${user.agentCode ? ` · ${user.agentCode}` : ''} · ${user.userId}` : ''}>
-                        <div className="flex items-center gap-2 text-white">
-                            <Avatar size={28} icon={<UserOutlined />} className="bg-white/85 !text-[#1450d8]" />
-                            <span className="hidden pr-2 text-[12.5px] font-semibold whitespace-nowrap sm:inline">
-                                {user?.name ?? 'User'}
-                            </span>
-                        </div>
+                            <BellOutlined />
+                        </button>
                     </Tooltip>
+                    <Dropdown menu={profileMenu} trigger={['click']} placement="bottomRight">
+                        <button
+                            type="button"
+                            aria-label="Profile menu"
+                            className="flex items-center gap-2 rounded-full py-0.5 pr-2 pl-0.5 text-white transition hover:bg-white/15"
+                        >
+                            <Avatar size={28} icon={<UserOutlined />} className="bg-white/85 !text-[#1450d8]" />
+                            <span className="hidden text-left leading-tight sm:block">
+                                <span className="block text-[12.5px] font-semibold whitespace-nowrap">{user?.name ?? 'User'}</span>
+                                <span className="block text-[10.5px] whitespace-nowrap text-white/85">{user?.roleName}</span>
+                            </span>
+                            <DownOutlined className="text-[9px]" />
+                        </button>
+                    </Dropdown>
                 </div>
             </div>
         </header>
