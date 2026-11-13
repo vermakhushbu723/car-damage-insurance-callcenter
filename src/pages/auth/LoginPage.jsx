@@ -5,10 +5,10 @@ import { CheckCircleFilled, LockOutlined, ReloadOutlined, UserOutlined } from '@
 
 import loginImage from '../../assets/images/loginHero.jpg';
 import ibimaLogo from '../../assets/images/ibimaLogo.svg';
-import { changePassword, getUser, login, logout, needsRolePick, switchRole } from '../../auth/session.js';
+import { changePassword, getUser, login, logout, needsRolePick, signIn, switchRole } from '../../auth/session.js';
 import { landingForUser } from '../../constants/nationalManager.js';
 import ROUTES from '../../constants/routes.js';
-import { ON_SITE, goToRole, loginUrl } from '../../portal.js';
+import { AT_COMMON_LOGIN, ON_SITE, goToRole, loginUrl } from '../../portal.js';
 
 // Same look as the Admin portal's sign-in. Accounts are created there
 // (Admin > Create Users); a temp password must be changed on first sign-in.
@@ -64,7 +64,10 @@ export default function LoginPage() {
             setPickRole(true);
             return;
         }
+        const u = getUser();
+        if (AT_COMMON_LOGIN) return goToRole(navigate, { role: u.roleKey, id: u.id }, '/');
         navigate(target, { replace: true });
+        return undefined;
     };
 
     const handleRole = async () => {
@@ -87,11 +90,14 @@ export default function LoginPage() {
         const u = getUser();
         // On the website the sign-in form is the common login; this page only
         // finishes it (new password, role).
-        if (ON_SITE && !u) {
+        if (ON_SITE && !u && !AT_COMMON_LOGIN) {
             window.location.replace(loginUrl({ expired: !!new URLSearchParams(location.search).get('expired') }));
             return;
         }
-        if (u && !u.mustChangePassword && !needsRolePick()) navigate(target, { replace: true });
+        if (u && !u.mustChangePassword && !needsRolePick()) {
+            if (AT_COMMON_LOGIN) goToRole(navigate, { role: u.roleKey, id: u.id }, '/');
+            else navigate(target, { replace: true });
+        }
         else if (new URLSearchParams(location.search).get('expired')) setError('Your session has ended. Please sign in again.');
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -112,7 +118,12 @@ export default function LoginPage() {
         setError('');
         setLoading(true);
         try {
-            const user = await login(identifier, password);
+            // Common login: the backend decides the portal; Super Admin / Admin open their console.
+            if (AT_COMMON_LOGIN) {
+                const url = await signIn(identifier, password);
+                if (url) return window.location.assign(url);
+            }
+            const user = AT_COMMON_LOGIN ? getUser() : await login(identifier, password);
             if (user.mustChangePassword) {
                 setMustChange(true);
                 return undefined;
@@ -213,17 +224,19 @@ export default function LoginPage() {
                         <>
                             <h1 className="m-0 text-lg font-bold text-slate-900">Welcome back</h1>
                             <p className="mt-0.5 mb-3 text-[12px] text-slate-900">
-                                Sign in to the Claim Management portal with the account your admin created.
+                                {AT_COMMON_LOGIN
+                                    ? 'Sign in to IBima Assist with the account your administrator created.'
+                                    : 'Sign in to the Claim Management portal with the account your admin created.'}
                             </p>
 
                             <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-2.5">
                                 <div>
-                                    <Label>User ID / Email Address</Label>
+                                    <Label>{AT_COMMON_LOGIN ? 'User ID / Email / Mobile Number' : 'User ID / Email Address'}</Label>
                                     <Input
                                         prefix={<UserOutlined className="text-slate-400" />}
                                         value={identifier}
                                         onChange={(e) => setIdentifier(e.target.value)}
-                                        placeholder="Enter User ID or Email"
+                                        placeholder={AT_COMMON_LOGIN ? 'Enter User ID, Email or Mobile Number' : 'Enter User ID or Email'}
                                         autoComplete="username"
                                         variant="filled"
                                         style={INPUT_STYLE}

@@ -43,6 +43,29 @@ export async function login(identifier, password) {
     return data.user;
 }
 
+/**
+ * The website's common login: POST /auth/sign-in finds which portal the account
+ * belongs to. Claim portal users get this portal's session (null = finish here:
+ * new password, role). Super Admin / Admin get their console's session, stored
+ * under the key and in the shape their src/auth/session.js reads (keep in sync),
+ * and the URL to open.
+ */
+export async function signIn(identifier, password) {
+    const data = await api.post('/auth/sign-in', { identifier: identifier.trim(), password }, { auth: false });
+    const expiresAt = Date.now() + data.expiresIn * 1000;
+    if (data.portal === 'claim') {
+        write({ token: data.token, user: data.user, expiresAt, roleChosen: false });
+        return null;
+    }
+    const id = encodeURIComponent(data.admin.id);
+    if (data.portal === 'superadmin') {
+        localStorage.setItem('superadmin_session_v2', JSON.stringify({ token: data.token, admin: data.admin, permissions: data.permissions, expiresAt }));
+        return `/super-admin/superadmin/${id}/`;
+    }
+    localStorage.setItem('ibima_admin_session_v2', JSON.stringify({ token: data.token, admin: data.admin, expiresAt }));
+    return `/admin/admin/${id}/`;
+}
+
 /** Signed in but no role picked yet? */
 export const needsRolePick = () => {
     const s = read();
