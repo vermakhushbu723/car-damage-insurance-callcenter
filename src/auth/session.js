@@ -38,8 +38,8 @@ export function onSessionChange(fn) {
 /** Signs in with User ID or email; throws ApiError with the server's reason. */
 export async function login(identifier, password) {
     const data = await api.post('/auth/login', { identifier: identifier.trim(), password }, { auth: false });
-    // Every sign-in picks the role to work in (roles come from Admin > Create Users).
-    write({ token: data.token, user: data.user, expiresAt: Date.now() + data.expiresIn * 1000, roleChosen: false });
+    // The session starts in the user's first (primary) role; other roles: profile menu > Switch Role.
+    write({ token: data.token, user: data.user, expiresAt: Date.now() + data.expiresIn * 1000 });
     return data.user;
 }
 
@@ -54,7 +54,7 @@ export async function signIn(identifier, password) {
     const data = await api.post('/auth/sign-in', { identifier: identifier.trim(), password }, { auth: false });
     const expiresAt = Date.now() + data.expiresIn * 1000;
     if (data.portal === 'claim') {
-        write({ token: data.token, user: data.user, expiresAt, roleChosen: false });
+        write({ token: data.token, user: data.user, expiresAt });
         return null;
     }
     const id = encodeURIComponent(data.admin.id);
@@ -66,16 +66,10 @@ export async function signIn(identifier, password) {
     return `/admin/admin/${id}/`;
 }
 
-/** Signed in but no role picked yet? */
-export const needsRolePick = () => {
-    const s = read();
-    return !!s && !s.roleChosen && s.user?.roles?.length > 0;
-};
-
 /** Works in another of the user's roles: new session, menu + permissions follow. */
 export async function switchRole(roleKey) {
     const data = await api.post('/auth/switch-role', { roleKey });
-    write({ token: data.token, user: data.user, expiresAt: Date.now() + data.expiresIn * 1000, roleChosen: true });
+    write({ token: data.token, user: data.user, expiresAt: Date.now() + data.expiresIn * 1000 });
     return data.user;
 }
 
