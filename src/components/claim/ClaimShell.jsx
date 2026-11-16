@@ -428,7 +428,9 @@ export default function ClaimShell({
 
     const goNext = () => {
         if (!claim) return message.info('Open a claim first');
-        const target = STAGE_ROUTES[STAGE_ORDER[STAGE_ORDER.indexOf(stage) + 1]];
+        // A screen outside the journey (e.g. Surveyor Assignment) continues at the claim's open step.
+        const at = STAGE_ORDER.indexOf(stage);
+        const target = at < 0 ? STAGE_ROUTES[claim.stage] : STAGE_ROUTES[STAGE_ORDER[at + 1]];
         if (target) navigate(target);
         else message.success('This claim has finished its journey');
         return undefined;

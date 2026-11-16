@@ -1,10 +1,9 @@
 /** Static parts of the header shared by every claim-processing screen. */
 
-/** Ordered claim journey; done / time come from the claim (stage tracker). */
+/** Ordered claim journey (Service Provider: no Surveyor Assignment step); done / time come from the claim (stage tracker). */
 export const CLAIM_STAGES = [
     { key: 'intimation', label: 'Intimation', icon: 'check' },
     { key: 'handler-allocation', label: 'Handler Allocation', icon: 'user' },
-    { key: 'surveyor-assignment', label: 'Surveyor Assignment', icon: 'search' },
     { key: 'claim-details', label: 'Claim Details', icon: 'file' },
     { key: 'ai-ila', label: 'AI ILA', icon: 'sparkle' },
     { key: 'fla', label: 'FLA', icon: 'shield' },

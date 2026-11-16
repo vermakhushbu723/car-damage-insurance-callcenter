@@ -95,7 +95,7 @@ export const NM_NAV = [
 export const NM_PROCESS_TABS = [
     { key: 'intimation', label: 'Intimations', stages: ['intimation'], pendingFor: 'Handler Allocation', color: '#0b4fc9' },
     { key: 'handler-allocation', label: 'Handler allocation', stages: ['handler-allocation'], pendingFor: 'Claim Details', color: '#0f766e' },
-    { key: 'claim-details', label: 'Claim Details', stages: ['surveyor-assignment', 'claim-details'], pendingFor: 'AI ILA', color: '#0284c7' },
+    { key: 'claim-details', label: 'Claim Details', stages: ['claim-details'], pendingFor: 'AI ILA', color: '#0284c7' },
     { key: 'ai-ila', label: 'AI ILA', stages: ['ai-ila'], pendingFor: 'Handler ILA', color: '#9333ea' },
     { key: 'handler-ila', label: 'Handler ILA', stages: ['fla'], pendingFor: 'FLA', color: '#059669' },
     { key: 'fla', label: 'FLA', stages: ['payment-recommendation'], pendingFor: 'Fee Bill', color: '#d97706' },
