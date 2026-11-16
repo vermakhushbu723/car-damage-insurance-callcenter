@@ -1,8 +1,11 @@
-import { Checkbox, DatePicker, Input, Radio, Select, TimePicker } from 'antd';
+import { AutoComplete, Checkbox, DatePicker, Input, Radio, Select, TimePicker } from 'antd';
 import { FileTextOutlined, SearchOutlined } from '@ant-design/icons';
 
 import { fileUrl } from '../../api/client.js';
 import { fileSize } from '../../utils/format.js';
+import { INDIA_STATES, citiesOf, PIN_RE, pinInput } from '../../data/indiaLocations.js';
+
+const STATE_OPTIONS = INDIA_STATES.map((s) => ({ label: s, value: s }));
 
 const { TextArea } = Input;
 
@@ -42,6 +45,51 @@ export default function DynamicField({ field, value, onChange, values, documents
 
     const control = (() => {
         switch (field.type) {
+            case 'state':
+                return (
+                    <Select
+                        {...common}
+                        value={value || undefined}
+                        options={STATE_OPTIONS}
+                        onChange={handle}
+                        allowClear
+                        showSearch={{ optionFilterProp: 'label' }}
+                        placeholder={field.placeholder || 'Select State'}
+                    />
+                );
+            case 'city': {
+                // That state's cities; a city not in the list can still be typed.
+                const state = values?.[field.stateField];
+                const typed = String(value ?? '').toLowerCase();
+                const list = citiesOf(state).filter((c) => !typed || c.toLowerCase().includes(typed)).map((c) => ({ value: c }));
+                return (
+                    <AutoComplete
+                        {...common}
+                        value={value || undefined}
+                        options={list}
+                        onChange={handle}
+                        allowClear
+                        placeholder={state ? field.placeholder || 'Select or type city' : 'Select State first'}
+                    />
+                );
+            }
+            case 'pincode': {
+                const bad = value && !PIN_RE.test(value);
+                return (
+                    <>
+                        <Input
+                            {...common}
+                            value={value || ''}
+                            inputMode="numeric"
+                            maxLength={6}
+                            status={bad ? 'error' : undefined}
+                            placeholder={field.placeholder || 'Enter 6-digit pincode'}
+                            onChange={(event) => handle(pinInput(event.target.value))}
+                        />
+                        {bad ? <span className="mt-0.5 block text-[10.5px] text-red-500">Enter a valid 6-digit pincode</span> : null}
+                    </>
+                );
+            }
             case 'select':
                 return (
                     <Select

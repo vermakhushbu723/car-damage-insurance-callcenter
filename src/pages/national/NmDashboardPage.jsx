@@ -29,6 +29,7 @@ import {
     USER_SUMMARY_CHART,
 } from '../../data/nationalManagerData.js';
 import { errText } from '../../utils/format.js';
+import { INDIA_STATES } from '../../data/indiaLocations.js';
 import { fmtDate, tatSince, useOpenClaim } from './nmClaims.js';
 
 const REGIONS = ['All Regions', 'North Region', 'South Region', 'East Region', 'West Region', 'Central Region', 'North East Region'];
@@ -121,7 +122,7 @@ export default function NmDashboardPage() {
                     <NmSelect options={REGIONS} placeholder="All Regions" />
                 </FieldLabel>
                 <FieldLabel label="State">
-                    <NmSelect options={[]} placeholder="Select State" />
+                    <NmSelect showSearch options={INDIA_STATES} placeholder="Select State" />
                 </FieldLabel>
                 <FieldLabel label="Branch">
                     <NmSelect options={[]} placeholder="Select Branch" />

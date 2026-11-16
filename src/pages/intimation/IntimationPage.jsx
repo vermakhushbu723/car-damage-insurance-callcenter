@@ -90,7 +90,15 @@ export default function IntimationPage() {
         [editing?.id, nextId, user?.name, values.receivedBy]
     );
 
-    const handleChange = (name, value) => setValues((prev) => ({ ...prev, [name]: value }));
+    const handleChange = (name, value) => setValues((prev) => {
+        const next = { ...prev, [name]: value };
+        const m = /^(incident|workshop)State$/.exec(name);
+        if (m && prev[name] !== value) {
+            next[`${m[1]}City`] = undefined;
+            next[`${m[1]}District`] = undefined;
+        }
+        return next;
+    });
     const handleLinkChange = (name, value) => setLink((prev) => ({ ...prev, [name]: value }));
 
     const linkSettings = () => ({

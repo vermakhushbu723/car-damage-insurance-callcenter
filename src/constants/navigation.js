@@ -81,7 +81,7 @@ export const EXTRA_ROUTES = [
     { key: 'handler-ila', label: 'Handler ILA', path: ROUTES.handlerIla, module: M.handlerIla },
     { key: 'fla-pending', label: 'FLA', path: ROUTES.flaPending, module: M.fla },
     { key: 'payment-recommendation', label: 'Payment Recommendation', path: ROUTES.paymentRecommendation, module: M.payment },
-    { key: 'survey-paybill', label: 'Survey Paybill', path: ROUTES.surveyPaybill, module: M.paybill },
+    { key: 'survey-paybill', label: 'Survey Fee Bill', path: ROUTES.surveyPaybill, module: M.paybill },
     { key: 'issue-letter', label: 'Issue Letter', path: ROUTES.issueLetter, module: M.letters },
 ];
 

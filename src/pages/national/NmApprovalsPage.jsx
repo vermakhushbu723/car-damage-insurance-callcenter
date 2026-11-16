@@ -6,9 +6,10 @@ import Pager from '../../components/common/Pager.jsx';
 import { FieldLabel, NmButton, NmSearch, NmSelect, NmTable, NmTitle, toneOf } from '../../components/national/NmUi.jsx';
 import { APPROVAL_KPIS, APPROVAL_ROWS, APPROVAL_TYPES } from '../../data/nationalManagerData.js';
 import cn from '../../utils/cn.js';
+import { INDIA_STATES } from '../../data/indiaLocations.js';
 
 const ICONS = { pending: FormOutlined, ila: FileSearchOutlined, fla: FileDoneOutlined, payment: DollarOutlined, fraud: AlertOutlined };
-const STATES = ['Andhra Pradesh', 'Odisha', 'Maharashtra', 'Rajasthan', 'Delhi'];
+const STATES = INDIA_STATES;
 const ACTIONS = ['Approve', 'Reject', 'Send Back'];
 const REASONS = ['Documents Incomplete', 'Amount Mismatch', 'Policy Not In Force', 'Other'];
 
@@ -96,7 +97,7 @@ export default function NmApprovalsPage() {
                     <NmSelect options={['All Region', 'North', 'South', 'East', 'West']} placeholder="All Region" />
                 </FieldLabel>
                 <FieldLabel label="State" required>
-                    <NmSelect options={STATES} placeholder="All Types" />
+                    <NmSelect showSearch options={STATES} placeholder="All States" />
                 </FieldLabel>
                 <FieldLabel label="Branch" required>
                     <NmSelect options={['All', 'kurnool', 'bhuneshwar']} placeholder="All" />

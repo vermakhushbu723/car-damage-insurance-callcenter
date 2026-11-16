@@ -29,6 +29,7 @@ import {
     USERS,
 } from '../../data/nationalManagerData.js';
 import cn from '../../utils/cn.js';
+import { INDIA_STATES, REGION_OF_STATE, citiesOf } from '../../data/indiaLocations.js';
 
 const NOT_CONNECTED = 'Not connected to the backend yet: this change was not saved.';
 const KPI_ICONS = { blue: <BankOutlined />, green: <CheckCircleOutlined />, amber: <MinusCircleOutlined />, red: <CloseCircleOutlined /> };
@@ -290,22 +291,28 @@ export function NmBranchesPage() {
                     <FieldLabel label="Organisation" required>
                         <NmSelect value={form.organization} onChange={set('organization')} placeholder="ABG Insurance" options={uniq(BRANCHES.map((b) => b.organization))} />
                     </FieldLabel>
+                    <FieldLabel label="State" required>
+                        <NmSelect
+                            showSearch
+                            value={form.state}
+                            onChange={(state) => setForm((f) => ({ ...f, state, region: REGION_OF_STATE[state] ?? '', city: f.state === state ? f.city : undefined }))}
+                            placeholder="Select State"
+                            options={INDIA_STATES}
+                        />
+                    </FieldLabel>
                     <FieldLabel label="City" required>
-                        <NmSelect value={form.city} onChange={set('city')} placeholder="Jaipur" options={['Jaipur', ...uniq(BRANCHES.map((b) => b.city))]} />
+                        <NmSelect showSearch value={form.city} onChange={set('city')} placeholder={form.state ? 'Select City' : 'Select State first'} options={citiesOf(form.state)} />
                     </FieldLabel>
                     <FieldLabel label="Address" required className="sm:col-span-2">
                         <NmInput value={form.address} onChange={set('address')} placeholder="Plot No. 12 MI Road, Jaipur, Rajasthan - 302001" />
                     </FieldLabel>
                 </DrawerSection>
-                <DrawerSection title="2. State & Region (Auto Assigned)">
-                    <FieldLabel label="State" required>
-                        <NmInput value={form.state} onChange={set('state')} placeholder="Rajasthan" />
-                    </FieldLabel>
+                <DrawerSection title="2. Region (Auto Assigned)">
                     <FieldLabel label="Region" required>
-                        <NmInput value={form.region} onChange={set('region')} placeholder="West" />
+                        <NmInput value={form.region} onChange={set('region')} placeholder="Auto from State" />
                     </FieldLabel>
                     <p className="m-0 flex items-center gap-2 rounded-md border border-[#0b4fc9] bg-[#bcd0f3] px-3 py-2 text-[11.5px] text-[#0b4fc9] sm:col-span-2">
-                        <InfoCircleOutlined /> State &amp; Region Will Be Automatically Assigned Based On Selected City
+                        <InfoCircleOutlined /> Region Is Automatically Assigned Based On The Selected State
                     </p>
                 </DrawerSection>
                 <DrawerSection title="3. Assignment">

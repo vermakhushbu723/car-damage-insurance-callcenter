@@ -212,10 +212,11 @@ export function NmSearch({ value, onChange, placeholder, className = '' }) {
     );
 }
 
-export function NmSelect({ value, onChange, options, placeholder, className = '' }) {
+export function NmSelect({ value, onChange, options, placeholder, className = '', showSearch = false }) {
     return (
         <Select
             value={value || undefined}
+            showSearch={showSearch ? { optionFilterProp: 'label' } : undefined}
             onChange={onChange}
             placeholder={placeholder}
             suffixIcon={<DownOutlined className="text-[10px] text-slate-500" />}

@@ -5,18 +5,15 @@
  *
  * field: { name, label, type, placeholder, options?, full?, span?, rows?, disabled? }
  * type:  text | select | date | time | textarea | radio | checkbox | search | heading | static | spacer
+ *        | state (all States/UTs) | city (cities of `stateField`, typing allowed) | pincode (typed, 6 digits)
  */
 
 const opts = (...labels) => labels.map((label) => ({ label, value: label }));
 
 export const YES_NO = opts('Yes', 'No');
 
-const CITY_OPTIONS = opts('Thane', 'Mumbai', 'Noida', 'Delhi', 'Bengaluru');
-const STATE_OPTIONS = opts('Maharashtra', 'Uttar Pradesh', 'Delhi', 'Karnataka', 'Gujarat');
-const PINCODE_OPTIONS = opts('400607', '201301', '110001', '560001');
 const COUNTRY_OPTIONS = opts('India');
 const LOB_OPTIONS = opts('Motor', 'Fire', 'Marine', 'Cattle', 'Engg', 'MISC');
-const DISTRICT_OPTIONS = opts('Thane', 'Mumbai', 'Gautam Buddh Nagar', 'New Delhi', 'Bengaluru Urban');
 const NCB_OPTIONS = opts('0%', '20%', '25%', '35%', '45%', '50%');
 const NATURE_OF_LOSS_OPTIONS = opts('Accidental External Means', 'Fire', 'Theft', 'Flood/Natural Calamity', 'Riot/Strike', 'Others');
 const SERVICING_BRANCH_OPTIONS = opts('Noida, UP Branch', 'Delhi HUb', 'Mumbai Branch', 'Thane Branch');
@@ -167,22 +164,10 @@ export const INTIMATION_LEFT_SECTIONS = [
             { name: 'timeOfIncident', label: 'Time Of Incident', type: 'time', placeholder: '10:45 AM' },
             { name: 'placeOfIncident', label: 'Place Of Incident', type: 'heading', full: true },
             { name: 'incidentArea', label: 'Area/Nearest Landmark', type: 'text', placeholder: 'Kolshet Road' },
-            {
-                name: 'incidentState',
-                label: 'State',
-                type: 'select',
-                placeholder: 'Maharashtra',
-                options: STATE_OPTIONS,
-            },
-            { name: 'incidentDistrict', label: 'Dist', type: 'select', placeholder: 'Thane', options: DISTRICT_OPTIONS },
-            { name: 'incidentCity', label: 'City', type: 'select', placeholder: 'Thane', options: CITY_OPTIONS },
-            {
-                name: 'incidentPincode',
-                label: 'Pincode',
-                type: 'select',
-                placeholder: '400607',
-                options: PINCODE_OPTIONS,
-            },
+            { name: 'incidentState', label: 'State', type: 'state', placeholder: 'Select State' },
+            { name: 'incidentDistrict', label: 'Dist', type: 'city', stateField: 'incidentState', placeholder: 'Select or type district' },
+            { name: 'incidentCity', label: 'City', type: 'city', stateField: 'incidentState', placeholder: 'Select or type city' },
+            { name: 'incidentPincode', label: 'Pincode', type: 'pincode', placeholder: 'Enter 6-digit pincode' },
             {
                 name: 'incidentCountry',
                 label: 'Country',
@@ -281,22 +266,10 @@ export const INTIMATION_RIGHT_SECTIONS = [
             },
             { name: 'contactPersonName', label: 'Contact Person Name', type: 'text', placeholder: 'Raju' },
             { name: 'workshopArea', label: 'Nearest Landmark/Area', type: 'text', placeholder: 'Kolshet Road' },
-            { name: 'workshopCity', label: 'City', type: 'select', placeholder: 'Thane', options: CITY_OPTIONS },
-            { name: 'workshopDistrict', label: 'Dist', type: 'select', placeholder: 'Thane', options: DISTRICT_OPTIONS },
-            {
-                name: 'workshopState',
-                label: 'State',
-                type: 'select',
-                placeholder: 'Maharashtra',
-                options: STATE_OPTIONS,
-            },
-            {
-                name: 'workshopPincode',
-                label: 'Pincode',
-                type: 'select',
-                placeholder: '400607',
-                options: PINCODE_OPTIONS,
-            },
+            { name: 'workshopState', label: 'State', type: 'state', placeholder: 'Select State' },
+            { name: 'workshopDistrict', label: 'Dist', type: 'city', stateField: 'workshopState', placeholder: 'Select or type district' },
+            { name: 'workshopCity', label: 'City', type: 'city', stateField: 'workshopState', placeholder: 'Select or type city' },
+            { name: 'workshopPincode', label: 'Pincode', type: 'pincode', placeholder: 'Enter 6-digit pincode' },
             {
                 name: 'workshopCountry',
                 label: 'Country',

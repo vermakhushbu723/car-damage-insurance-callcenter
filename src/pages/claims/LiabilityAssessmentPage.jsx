@@ -65,7 +65,7 @@ function ComputationCard({ title, table, open, onViewAll }) {
  */
 const KIND = {
     liability: { title: 'HANDLER ILA', module: MODULES.handlerIla, file: 'Handler-ILA', next: ROUTES.flaPending, nextLabel: 'FLA' },
-    fla: { title: 'FLA', module: MODULES.fla, file: 'FLA', next: ROUTES.paymentRecommendation, nextLabel: 'Payment Recommendation' },
+    fla: { title: 'FLA', module: MODULES.fla, file: 'FLA', next: ROUTES.surveyPaybill, nextLabel: 'Survey Fee Bill' },
 };
 
 export default function LiabilityAssessmentPage({ kind = 'liability' }) {
@@ -230,14 +230,14 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
 
     if (claim?.status === 'Draft') {
         return (
-            <ClaimShell title={K.title} subtitle="Intelligent Liability Assessment" stage="fla">
+            <ClaimShell title={K.title} subtitle="Intelligent Liability Assessment" stage={kind === 'fla' ? 'fla' : 'handler-ila'}>
                 <p className="text-[12px] text-slate-600">Submit the intimation first.</p>
             </ClaimShell>
         );
     }
 
     return (
-        <ClaimShell title={K.title} subtitle="Intelligent Liability Assessment" stage="fla" onNext={() => navigate(K.next)}>
+        <ClaimShell title={K.title} subtitle="Intelligent Liability Assessment" stage={kind === 'fla' ? 'fla' : 'handler-ila'} onNext={() => navigate(K.next)}>
             {!data ? (
                 <Spin className="!py-10" />
             ) : (

@@ -60,11 +60,9 @@ const ACTION_ICONS = {
 export const STAGE_ROUTES = {
     intimation: ROUTES.intimation,
     'handler-allocation': ROUTES.handlerAllocation,
-    'surveyor-assignment': ROUTES.surveyorAssignment,
-    'claim-details': ROUTES.claimDetails,
     'ai-ila': ROUTES.aiIla,
-    fla: ROUTES.handlerIla,
-    'payment-recommendation': ROUTES.paymentRecommendation,
+    'handler-ila': ROUTES.handlerIla,
+    fla: ROUTES.flaPending,
     'survey-paybill': ROUTES.surveyPaybill,
 };
 

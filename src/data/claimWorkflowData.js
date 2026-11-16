@@ -1,14 +1,13 @@
 /** Static parts of the header shared by every claim-processing screen. */
 
-/** Ordered claim journey (Service Provider: no Surveyor Assignment step); done / time come from the claim (stage tracker). */
+/** Service Provider claim journey: Intimation > Handler Allocation > AI ILA > Handler ILA > FLA > Survey Fee Bill; done / time come from the claim. */
 export const CLAIM_STAGES = [
     { key: 'intimation', label: 'Intimation', icon: 'check' },
     { key: 'handler-allocation', label: 'Handler Allocation', icon: 'user' },
-    { key: 'claim-details', label: 'Claim Details', icon: 'file' },
     { key: 'ai-ila', label: 'AI ILA', icon: 'sparkle' },
+    { key: 'handler-ila', label: 'Handler ILA', icon: 'file' },
     { key: 'fla', label: 'FLA', icon: 'shield' },
-    { key: 'payment-recommendation', label: 'Payment Recommendation', icon: 'wallet' },
-    { key: 'survey-paybill', label: 'Survey Paybill', icon: 'card' },
+    { key: 'survey-paybill', label: 'Survey Fee Bill', icon: 'card' },
 ];
 
 export const CLAIM_ACTION_BUTTONS = [

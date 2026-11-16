@@ -103,7 +103,7 @@ export default function SurveyPaybillPage() {
 
     if (claim?.status === 'Draft') {
         return (
-            <ClaimShell title="Survey Paybill" subtitle="Review, Verify And Process Surveyor Payments" stage="survey-paybill">
+            <ClaimShell title="Survey Fee Bill" subtitle="Review, Verify And Generate The Survey Fee Bill" stage="survey-paybill">
                 <p className="text-[12px] text-slate-600">Submit the intimation first.</p>
             </ClaimShell>
         );
@@ -111,8 +111,8 @@ export default function SurveyPaybillPage() {
 
     return (
         <ClaimShell
-            title="Survey Paybill"
-            subtitle="Review, Verify And Process Surveyor Payments"
+            title="Survey Fee Bill"
+            subtitle="Review, Verify And Generate The Survey Fee Bill"
             stage="survey-paybill"
             onNext={() => navigate(can(MODULES.letters) ? ROUTES.issueLetter : ROUTES.dashboard)}
         >
@@ -120,11 +120,6 @@ export default function SurveyPaybillPage() {
                 <Spin className="!py-10" />
             ) : (
                 <>
-                    {!data.assigned ? (
-                        <p className="mb-0 rounded-lg bg-amber-50 px-4 py-2 text-[11.5px] text-amber-700">
-                            No surveyor is assigned to this claim yet -- assign one in Surveyor Assignment first.
-                        </p>
-                    ) : null}
                     {data.generatedAt ? (
                         <p className="mb-0 rounded-lg bg-emerald-50 px-4 py-2 text-[11.5px] text-emerald-700">Bill generated {fmtDateTime(data.generatedAt)}.</p>
                     ) : null}
@@ -256,7 +251,7 @@ export default function SurveyPaybillPage() {
                         <Button icon={<SaveOutlined />} loading={busy === 'save'} disabled={!canEdit} onClick={save}>
                             Save As Draft
                         </Button>
-                        <Button type="primary" icon={<DownloadOutlined />} loading={busy === 'pdf'} disabled={!canEdit || !data.assigned} onClick={generate}>
+                        <Button type="primary" icon={<DownloadOutlined />} loading={busy === 'pdf'} disabled={!canEdit} onClick={generate}>
                             Generate PDF
                         </Button>
                     </div>
