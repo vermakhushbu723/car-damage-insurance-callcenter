@@ -10,6 +10,12 @@ const VERIFY = opts('Pending', 'Verified', 'Rejected');
 const t = (name, label, placeholder, extra = {}) => ({ name, label, type: 'text', placeholder, ...extra });
 const d = (name, label) => ({ name, label, type: 'date', placeholder: 'Select Date' });
 const s = (name, label, placeholder, options) => ({ name, label, type: 'select', placeholder, options });
+// State (all States/UTs) -> City (that state's cities, typing allowed) -> Pincode (typed, 6 digits).
+const place = (prefix, label) => [
+    { name: `${prefix}State`, label: `${label} State`, type: 'state', placeholder: 'Select State' },
+    { name: `${prefix}City`, label: `${label} City`, type: 'city', stateField: `${prefix}State`, placeholder: 'Select or type city' },
+    { name: `${prefix}Pincode`, label: `${label} Pincode`, type: 'pincode', placeholder: 'Enter 6-digit pincode' },
+];
 
 export const CLAIM_INFO_TABS = [
     { key: 'claim', label: 'Claim Information', icon: 'file' },
@@ -85,6 +91,7 @@ export const CLAIM_INFO_SECTIONS = {
             d('dateOfLoss', 'Date Of Loss'),
             t('timeOfLoss', 'Time Of Loss', 'Enter Time Of Loss'),
             t('lossLocation', 'Loss Location', 'Enter Loss Location'),
+            ...place('loss', 'Loss'),
             t('causeOfLoss', 'Cause Of Loss', 'Enter Cause Of Loss'),
             t('accidentType', 'Accident Type', 'Enter Accident Type'),
             t('lossInfoDescription', 'Loss Description', 'Enter Loss Description'),
@@ -101,6 +108,7 @@ export const CLAIM_INFO_SECTIONS = {
             t('workshopName', 'Workshop Name', 'Enter Workshop Name'),
             t('workshopId', 'Workshop ID', 'Enter Workshop ID'),
             t('workshopAddress', 'Workshop Address', 'Enter Workshop Address'),
+            ...place('workshop', 'Workshop'),
             t('gstin', 'GSTIN', 'Enter Gstin'),
             t('workshopContactPerson', 'Contact Person', 'Enter Contact Person'),
             d('vehicleReceivedDate', 'Vehicle Received Date'),

@@ -170,7 +170,13 @@ export default function ClaimInfoSection({ claimId, canEdit, files = [] }) {
                                 key={field.name}
                                 field={{ ...field, disabled: !canEdit }}
                                 value={values[field.name]}
-                                onChange={(name, v) => setValues((prev) => ({ ...prev, [name]: v }))}
+                                values={values}
+                                onChange={(name, v) => setValues((prev) => {
+                                    const next = { ...prev, [name]: v };
+                                    // A new State clears that address's City (it belonged to the old state).
+                                    if (name.endsWith('State') && prev[name] !== v) next[name.replace(/State$/, 'City')] = undefined;
+                                    return next;
+                                })}
                             />
                         ))}
                     </div>

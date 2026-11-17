@@ -82,7 +82,7 @@ export default function LoginPage() {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        if (!identifier.trim()) return setError(AT_COMMON_LOGIN ? 'Please enter your User ID or full name.' : 'Please enter your User ID or email address.');
+        if (!identifier.trim()) return setError('Please enter your User ID or email address.');
         if (!password) return setError('Please enter your password.');
         if (captchaInput.trim() !== captcha) {
             setError('Captcha does not match (it is case-sensitive).');
@@ -160,12 +160,12 @@ export default function LoginPage() {
 
                             <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-2.5">
                                 <div>
-                                    <Label>{AT_COMMON_LOGIN ? 'User ID / Full Name' : 'User ID / Email Address'}</Label>
+                                    <Label>{'User ID / Email Address'}</Label>
                                     <Input
                                         prefix={<UserOutlined className="text-slate-400" />}
                                         value={identifier}
                                         onChange={(e) => setIdentifier(e.target.value)}
-                                        placeholder={AT_COMMON_LOGIN ? 'Enter your User ID or full name' : 'Enter User ID or Email'}
+                                        placeholder={'Enter User ID or Email'}
                                         autoComplete="username"
                                         variant="filled"
                                         style={INPUT_STYLE}
