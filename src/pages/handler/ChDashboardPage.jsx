@@ -39,7 +39,7 @@ const STATUS_TONES = {
 
 /** Status shown to the handler, from the claim's next step. */
 const statusOf = (stage) => {
-    if (stage === 'handler-allocation' || stage === 'surveyor-assignment') return 'Assigned';
+    if (stage === 'handler-allocation' || stage === 'claim-details') return 'Assigned';
     if (stage === 'ai-ila' || stage === 'handler-ila') return 'Pending ILA';
     return 'In Review';
 };

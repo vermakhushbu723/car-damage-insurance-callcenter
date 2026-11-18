@@ -94,7 +94,8 @@ export const NM_NAV = [
 /** Claim Process tiles, in the Service Provider journey (Figma: Claim Journey - As Service Provider). */
 export const NM_PROCESS_TABS = [
     { key: 'intimation', label: 'Intimations', stages: ['intimation'], pendingFor: 'Handler Allocation', color: '#0b4fc9' },
-    { key: 'handler-allocation', label: 'Handler allocation', stages: ['handler-allocation'], pendingFor: 'AI ILA', color: '#0f766e' },
+    { key: 'handler-allocation', label: 'Handler allocation', stages: ['handler-allocation'], pendingFor: 'Claim Details', color: '#0f766e' },
+    { key: 'claim-details', label: 'Claim Details', stages: ['claim-details'], pendingFor: 'AI ILA', color: '#0284c7' },
     { key: 'ai-ila', label: 'AI ILA', stages: ['ai-ila'], pendingFor: 'Handler ILA', color: '#9333ea' },
     { key: 'handler-ila', label: 'Handler ILA', stages: ['handler-ila'], pendingFor: 'FLA', color: '#059669' },
     { key: 'fla', label: 'FLA', stages: ['fla'], pendingFor: 'Survey Fee Bill', color: '#d97706' },

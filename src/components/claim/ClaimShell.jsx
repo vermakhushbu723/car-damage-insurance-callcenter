@@ -60,6 +60,7 @@ const ACTION_ICONS = {
 export const STAGE_ROUTES = {
     intimation: ROUTES.intimation,
     'handler-allocation': ROUTES.handlerAllocation,
+    'claim-details': ROUTES.claimDetails,
     'ai-ila': ROUTES.aiIla,
     'handler-ila': ROUTES.handlerIla,
     fla: ROUTES.flaPending,
