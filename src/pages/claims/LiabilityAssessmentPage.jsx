@@ -3,7 +3,7 @@ import { App, Button, Input, InputNumber, Select, Spin, Table } from 'antd';
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
-import { ALLOWED_OPTIONS, MATERIAL_OPTIONS, REPAIR_REPLACE_OPTIONS } from '../../data/liabilityData.js';
+import { ALLOWED_OPTIONS, IMT23_OPTIONS, MATERIAL_OPTIONS, REPAIR_REPLACE_OPTIONS } from '../../data/liabilityData.js';
 import ClaimShell from '../../components/claim/ClaimShell.jsx';
 import { api, download } from '../../api/client.js';
 import { useAppState } from '../../context/AppContext.jsx';
@@ -15,41 +15,35 @@ import cn from '../../utils/cn.js';
 const header = (label) => <span className="text-[11.5px] font-semibold text-slate-800">{label}</span>;
 const cell = (value) => <span className="text-[11.5px] text-slate-700">{value}</span>;
 
-/** Simple label / values grid used by the four computation blocks. */
-function ComputationCard({ title, table, open, onViewAll }) {
-    const rows = open !== false ? table.rows : table.rows.filter((r) => r.bold || ['gross', 'net', 'parts', 'labour'].includes(r.key));
+/** Figma summary table (Gross / Depn / IMT 23 / Net, or one Net column). */
+function SummaryCard({ table, children }) {
     return (
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <header className="flex items-center justify-between gap-3 px-5 pt-4 pb-3">
-                <h3 className="mb-0 text-[13.5px] font-bold text-[#1450d8]">{title}</h3>
-                <button type="button" onClick={onViewAll} className="text-[11.5px] font-semibold text-[#1450d8] hover:underline">
-                    {open !== false ? 'Show Less' : 'View All'}
-                </button>
-            </header>
-
+            <h3 className="mb-0 px-5 pt-4 pb-3 text-[13.5px] font-bold text-[#1450d8]">{table.title}</h3>
             <div className="overflow-x-auto">
                 <table className="w-full min-w-[520px] border-collapse">
                     <thead>
-                        <tr className="bg-slate-50">
+                        <tr className="bg-[#c5daff]">
                             {table.columns.map((column, index) => (
-                                <th key={column} className={cn('px-5 py-2.5 text-[11.5px] font-semibold text-slate-700', index === 0 ? 'text-left' : 'text-right')}>
+                                <th key={column} className={cn('px-4 py-2.5 text-[11px] font-semibold uppercase text-slate-800', index === 0 ? 'text-left' : 'text-right')}>
                                     {column}
                                 </th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
-                        {rows.map((row) => (
+                        {table.rows.map((row) => (
                             <tr key={row.key} className="border-t border-slate-100">
-                                <td className={cn('px-5 py-2.5 text-[11.5px]', row.bold ? 'font-bold text-slate-900' : 'text-slate-700')}>{row.label}</td>
-                                {row.values.map((value, index) => (
-                                    <td
-                                        key={`${row.key}-${index}`}
-                                        className={cn('px-5 py-2.5 text-right text-[11.5px]', row.bold ? 'font-bold text-slate-900' : 'text-slate-700')}
-                                    >
-                                        {formatINR(value)}
-                                    </td>
-                                ))}
+                                <td className={cn('px-4 py-2 text-[11.5px]', row.bold ? 'font-bold text-slate-900' : 'text-slate-700')}>{row.label}</td>
+                                {row.text !== undefined ? (
+                                    <td className="px-4 py-2 text-right text-[11.5px] text-slate-700">{row.text}</td>
+                                ) : (
+                                    row.values.map((value, index) => (
+                                        <td key={`${row.key}-${index}`} className={cn('px-4 py-2 text-right text-[11.5px]', row.bold ? 'font-bold text-slate-900' : 'text-slate-700')}>
+                                            {children ? children(row, value) : formatINR(value)}
+                                        </td>
+                                    ))
+                                )}
                             </tr>
                         ))}
                     </tbody>
@@ -74,7 +68,6 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
     const navigate = useNavigate();
     const { claim, reloadClaim, can } = useAppState();
     const [data, setData] = useState(null);
-    const [open, setOpen] = useState({});
     const [busy, setBusy] = useState(null);
     const [filters, setFilters] = useState({ part: '', material: undefined, action: undefined, allowed: undefined, remarks: '' });
     const timers = useRef({});
@@ -226,7 +219,48 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
                 ),
         },
         { title: header('Dep%'), dataIndex: 'depreciationPct', key: 'depreciationPct', render: (v) => cell(`${v}%`) },
+        {
+            title: header('IMT 23'),
+            dataIndex: 'imt23',
+            key: 'imt23',
+            render: (value, row) =>
+                canEdit ? (
+                    <Select size="small" value={!!value} options={IMT23_OPTIONS} className="w-[80px]" onChange={(v) => updatePart(row.id, 'imt23', v)} />
+                ) : (
+                    cell(value ? 'Yes' : 'No')
+                ),
+        },
     ];
+
+    // Final Settlement Summary amounts + 3. Remarks (PUT .../charges, debounced)
+    const saveCharges = (patch, delay = 700) => {
+        clearTimeout(timers.current.charges);
+        timers.current.charges = setTimeout(
+            () =>
+                api
+                    .put(`${base}/charges`, patch)
+                    .then(setData)
+                    .catch((err) => {
+                        message.error(errText(err));
+                        api.get(base).then(setData);
+                    }),
+            delay
+        );
+    };
+    const settlementCell = (row, value) =>
+        row.editable && canEdit ? (
+            <InputNumber
+                size="small"
+                min={0}
+                value={Math.abs(value)}
+                className="w-[120px]"
+                formatter={(v) => formatINR(Number(v || 0))}
+                parser={(v) => Number(String(v).replace(/[^\d]/g, ''))}
+                onChange={(v) => saveCharges({ [row.key]: v || 0 })}
+            />
+        ) : (
+            <span className={row.deduction && value ? 'text-red-600' : undefined}>{formatINR(value)}</span>
+        );
 
     if (claim?.status === 'Draft') {
         return (
@@ -305,14 +339,32 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
                         </footer>
                     </section>
 
-                    {[
-                        ['parts', 'Parts Computation'],
-                        ['labour', 'Labour Computation'],
-                        ['charges', 'Additional Charges & Deductions'],
-                        ['final', 'Final Assessment'],
-                    ].map(([key, title]) => (
-                        <ComputationCard key={key} title={title} table={data.tables[key]} open={open[key]} onViewAll={() => setOpen((o) => ({ ...o, [key]: o[key] === false }))} />
-                    ))}
+                    <p className="mb-0 rounded-lg bg-slate-50 px-4 py-2 text-[11px] text-slate-600">
+                        Depreciation on replaced parts (IRDAI): metal {data.metalDepreciationPct}%
+                        {data.ageMonths == null ? ' (vehicle age not known)' : ` (vehicle age ${Math.floor(data.ageMonths / 12)}y ${data.ageMonths % 12}m)`}, plastic / rubber 50%,
+                        fibre glass 30%, glass nil; paint material 50%. IMT 23 = 50% deduction on that part.
+                    </p>
+
+                    <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[1.45fr_1fr]">
+                        <div className="flex min-w-0 flex-col gap-4">
+                            <SummaryCard table={data.tables.parts} />
+                            <SummaryCard table={data.tables.labour} />
+                            <section className="rounded-xl border border-slate-200 bg-white px-5 pt-4 pb-4">
+                                <h3 className="mb-2 text-[13.5px] font-bold text-[#1450d8]">3. Remarks</h3>
+                                <Input.TextArea
+                                    rows={3}
+                                    disabled={!canEdit}
+                                    defaultValue={data.remarks}
+                                    key={`remarks-${data.status}`}
+                                    placeholder="Remarks for this assessment (shown on the report)"
+                                    onChange={(e) => saveCharges({ remarks: e.target.value }, 900)}
+                                />
+                            </section>
+                        </div>
+                        <div className="min-w-0">
+                            <SummaryCard table={data.tables.final}>{settlementCell}</SummaryCard>
+                        </div>
+                    </div>
 
                     <div className="flex flex-wrap justify-end gap-3">
                         <Button disabled={!canEdit} onClick={submit}>
