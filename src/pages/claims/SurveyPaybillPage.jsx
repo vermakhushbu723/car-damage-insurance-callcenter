@@ -103,7 +103,7 @@ export default function SurveyPaybillPage() {
 
     if (claim?.status === 'Draft') {
         return (
-            <ClaimShell title="Survey Fee Bill" subtitle="Review, Verify And Generate The Survey Fee Bill" stage="survey-paybill">
+            <ClaimShell title="Survey Paybill" subtitle="Review, Verify And Process Surveyor Payments" stage="survey-paybill">
                 <p className="text-[12px] text-slate-600">Submit the intimation first.</p>
             </ClaimShell>
         );
@@ -111,8 +111,8 @@ export default function SurveyPaybillPage() {
 
     return (
         <ClaimShell
-            title="Survey Fee Bill"
-            subtitle="Review, Verify And Generate The Survey Fee Bill"
+            title="Survey Paybill"
+            subtitle="Review, Verify And Process Surveyor Payments"
             stage="survey-paybill"
             onNext={() => navigate(can(MODULES.letters) ? ROUTES.issueLetter : ROUTES.dashboard)}
         >
