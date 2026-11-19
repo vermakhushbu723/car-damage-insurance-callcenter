@@ -192,56 +192,55 @@ function ClaimMetaBar({ claim }) {
 }
 
 /**
- * Journey tracker. A done or current step opens its screen; DMS (last) is always
- * open -- upload / download the claim's photos and documents at any step.
+ * Journey tracker (Figma): big circles with arrows -- Intimation, Handler Allocation,
+ * AI ILA, Handler ILA, FLA, Fee Bill, DMS. Done / current steps are filled and open
+ * their screen; DMS (last) is always open for uploading / downloading documents.
  */
 function ClaimStageTracker({ claim }) {
     const navigate = useNavigate();
     const { can } = useAppState();
     const done = Object.fromEntries((claim?.stages ?? []).map((s) => [s.key, s]));
     const dmsAllowed = !can || can(MODULES.dms);
-    const items = [...CLAIM_STAGES, { key: 'dms', label: 'DMS', icon: 'file', always: true }];
+    const items = [...CLAIM_STAGES.filter((s) => !s.hidden), { key: 'dms', label: 'DMS', icon: 'file', always: true }];
+    // Claim Details (hidden circle) being current lights Handler Allocation's arrow onwards like Figma
+    const currentKey = claim?.stage === 'claim-details' ? null : claim?.stage;
 
     return (
-        <section className="grid grid-cols-2 gap-x-3 gap-y-3 rounded-xl border border-slate-200 bg-white px-4 py-3 sm:grid-cols-4 xl:grid-cols-8">
-            {items.map((item) => {
-                const state = done[item.key];
-                const isDone = !!state?.done;
-                const current = claim?.stage === item.key;
-                const Icon = isDone ? CheckOutlined : STAGE_ICONS[item.icon] || FileTextOutlined;
-                const route = item.always ? (dmsAllowed ? ROUTES.documentsDms : null) : isDone || current ? STAGE_ROUTES[item.key] : null;
-                const Tag = route ? 'button' : 'div';
-
-                return (
-                    <Tag
-                        key={item.key}
-                        {...(route ? { type: 'button', onClick: () => navigate(route), title: item.always ? 'Upload / download photos and documents' : `Open ${item.label}` } : {})}
-                        className={cn('flex min-w-0 items-center gap-2 text-left', route && 'cursor-pointer rounded-lg hover:bg-slate-50')}
-                    >
-                        <span
-                            className={cn(
-                                'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10.5px]',
-                                item.always
-                                    ? 'bg-[#1450d8] text-white'
-                                    : isDone
-                                      ? 'bg-emerald-100 text-emerald-600'
-                                      : current
-                                        ? 'bg-blue-100 text-[#1450d8]'
-                                        : 'bg-slate-100 text-slate-400'
-                            )}
-                        >
-                            <Icon />
-                        </span>
-                        <span className="min-w-0">
-                            <span className={cn('block truncate text-[10.5px] font-semibold', isDone || item.always || current ? 'text-slate-800' : 'text-slate-400')}>
-                                {item.label}
-                            </span>
-                            {isDone ? <span className="block text-[10px] text-slate-500">{fmtShort(state.at)}</span> : null}
-                            {item.always ? <span className="block text-[10px] text-[#1450d8]">Always open</span> : null}
-                        </span>
-                    </Tag>
-                );
-            })}
+        <section className="overflow-x-auto rounded-xl bg-white px-2 py-2">
+            <div className="flex min-w-[760px] items-start justify-between">
+                {items.map((item, i) => {
+                    const state = done[item.key];
+                    const isDone = !!state?.done;
+                    const current = currentKey === item.key;
+                    const filled = item.always || isDone || current;
+                    const Icon = STAGE_ICONS[item.icon] || FileTextOutlined;
+                    const route = item.always ? (dmsAllowed ? ROUTES.documentsDms : null) : isDone || current ? STAGE_ROUTES[item.key] : null;
+                    return (
+                        <div key={item.key} className="flex flex-1 items-start last:flex-none">
+                            <button
+                                type="button"
+                                disabled={!route}
+                                onClick={() => route && navigate(route)}
+                                title={item.always ? 'Upload / download photos and documents' : isDone ? `${item.label} · done ${fmtShort(state.at)}` : item.label}
+                                className={cn('flex w-[92px] shrink-0 flex-col items-center gap-1.5 text-center', route ? 'cursor-pointer' : 'cursor-default')}
+                            >
+                                <span
+                                    className={cn(
+                                        'flex h-14 w-14 items-center justify-center rounded-full text-[22px] transition',
+                                        filled ? 'bg-[#1450d8] text-white' : 'bg-[#c5d6f7] text-white',
+                                        current && 'ring-4 ring-[#1450d8]/25',
+                                        route && 'hover:opacity-90'
+                                    )}
+                                >
+                                    {isDone && !item.always ? <CheckOutlined /> : <Icon />}
+                                </span>
+                                <span className={cn('text-[12px] font-medium leading-tight', filled ? 'text-[#1450d8]' : 'text-[#1450d8]/70')}>{item.label}</span>
+                            </button>
+                            {i < items.length - 1 ? <span className="mt-7 flex-1 px-1 text-center text-[#1450d8]">⟶</span> : null}
+                        </div>
+                    );
+                })}
+            </div>
         </section>
     );
 }

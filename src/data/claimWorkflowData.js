@@ -1,14 +1,18 @@
 /** Static parts of the header shared by every claim-processing screen. */
 
-/** Service Provider claim journey: Intimation > Handler Allocation > Claim Details > AI ILA > Handler ILA > FLA > Survey Fee Bill; done / time come from the claim. */
+/**
+ * Service Provider claim journey (Figma tracker): Intimation > Handler Allocation > AI ILA >
+ * Handler ILA > FLA > Fee Bill > DMS. Claim Details is a step of the flow (after Handler
+ * Allocation, shown as the claim's Current Stage) but not a circle of the tracker.
+ */
 export const CLAIM_STAGES = [
     { key: 'intimation', label: 'Intimation', icon: 'check' },
     { key: 'handler-allocation', label: 'Handler Allocation', icon: 'user' },
-    { key: 'claim-details', label: 'Claim Details', icon: 'search' },
+    { key: 'claim-details', label: 'Claim Details', icon: 'search', hidden: true },
     { key: 'ai-ila', label: 'AI ILA', icon: 'sparkle' },
     { key: 'handler-ila', label: 'Handler ILA', icon: 'file' },
     { key: 'fla', label: 'FLA', icon: 'shield' },
-    { key: 'survey-paybill', label: 'Survey Fee Bill', icon: 'card' },
+    { key: 'survey-paybill', label: 'Fee Bill', icon: 'card' },
 ];
 
 export const CLAIM_ACTION_BUTTONS = [

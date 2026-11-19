@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
 import { App, Button, Spin, Switch } from 'antd';
-import { AppstoreOutlined, CarOutlined, CloseOutlined, FileTextOutlined, LeftOutlined, RightOutlined, SaveOutlined, ThunderboltOutlined, UserOutlined } from '@ant-design/icons';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 
 import { CLAIM_DETAIL_SECTIONS, CLAIM_DETAIL_TABS } from '../../data/claimDetailsData.js';
 import ClaimShell from '../../components/claim/ClaimShell.jsx';
-import ClaimInfoSection from '../../components/claim/ClaimInfoSection.jsx';
-import { formatINR } from '../../utils/format.js';
 import DocumentViewer from '../../components/claim/DocumentViewer.jsx';
 import DynamicField from '../../components/intimation/DynamicField.jsx';
 import DmsDocumentsPanel from '../../components/intimation/DmsDocumentsPanel.jsx';
@@ -17,7 +15,6 @@ import { useAppState } from '../../context/AppContext.jsx';
 import { MODULES } from '../../constants/navigation.js';
 import ROUTES from '../../constants/routes.js';
 import { errText, fmtDateTime } from '../../utils/format.js';
-import cn from '../../utils/cn.js';
 
 const MOMENT_FIELDS = new Set(
     Object.values(CLAIM_DETAIL_SECTIONS)
@@ -28,57 +25,16 @@ const MOMENT_FIELDS = new Set(
 const toForm = (v = {}) => Object.fromEntries(Object.entries(v).map(([k, x]) => [k, MOMENT_FIELDS.has(k) && x ? dayjs(x) : x]));
 const toApi = (v) => Object.fromEntries(Object.entries(v).map(([k, x]) => [k, dayjs.isDayjs(x) ? x.toISOString() : x]));
 
-const TAB_ICONS = { car: CarOutlined, user: UserOutlined, file: FileTextOutlined, grid: AppstoreOutlined, sparkle: ThunderboltOutlined };
-
-/** AI Assessment tab: the AI ILA findings of this claim (read-only; edited on the AI ILA screen). */
-function AiAssessmentTab({ claimId, onOpen }) {
-    const [data, setData] = useState(undefined);
-    useEffect(() => {
-        if (!claimId) return;
-        api.get(`/claims/${claimId}/ai-ila`)
-            .then(setData)
-            .catch(() => setData(null));
-    }, [claimId]);
-    if (data === undefined) return <Spin />;
-    if (data === null) return <p className="mb-0 text-[11px] text-slate-500">Your role cannot view the AI assessment.</p>;
-    return (
-        <div className="flex flex-col gap-2">
-            <div className="flex flex-wrap justify-between gap-2 rounded-lg bg-[#f3f5f9] px-3 py-2 text-[11px]">
-                <span>
-                    AI: <b>{data.ai.status === 'done' ? 'Assessed' : data.ai.configured ? 'Not run yet' : 'Not connected'}</b>
-                    {data.review.decision ? ` · ${data.review.decision}` : ''}
-                </span>
-                <span>
-                    Estimate <b>₹{formatINR(data.summary.total)}</b>
-                </span>
-            </div>
-            {data.rows.length ? (
-                data.rows.map((r) => (
-                    <div key={r.id} className="flex items-center justify-between gap-2 border-b border-slate-100 pb-1.5 text-[11px]">
-                        <span>
-                            <span className="font-semibold text-slate-900">{r.part}</span>
-                            <span className="block text-[10px] text-slate-500">
-                                {r.damageType} · {r.severity} · {r.action} · {r.status}
-                            </span>
-                        </span>
-                        <span className="font-semibold text-slate-800">₹{formatINR(r.cost)}</span>
-                    </div>
-                ))
-            ) : (
-                <p className="mb-0 text-[11px] text-slate-500">No damages assessed yet.</p>
-            )}
-            <Button size="small" onClick={onOpen} className="!mt-1 w-fit !text-[#1450d8]">
-                Open AI ILA
-            </Button>
-        </div>
-    );
-}
-
+/**
+ * Claim Details (Figma): 1. Claim Information, 2. Loss Details, 3. Vehicle Details
+ * beside the document viewer and the DMS documents. Submit saves; Next (top)
+ * completes the Claim Details step and opens AI ILA.
+ */
 export default function ClaimDetailsPage() {
     const { message } = App.useApp();
     const navigate = useNavigate();
     const { claim, setClaim, can } = useAppState();
-    const [tab, setTab] = useState('vehicle');
+    const [tab, setTab] = useState('claim');
     const [editMode, setEditMode] = useState(true);
     const [values, setValues] = useState({});
     const [saved, setSaved] = useState(null);
@@ -115,7 +71,7 @@ export default function ClaimDetailsPage() {
             if (complete) {
                 message.success('Claim details completed');
                 navigate(ROUTES.aiIla);
-            } else message.success('Draft saved');
+            } else message.success('Claim details saved');
         } catch (err) {
             message.error(errText(err));
         } finally {
@@ -153,39 +109,17 @@ export default function ClaimDetailsPage() {
                         </Button>
                     </div>
 
-                    <div className="mb-4 flex gap-1 overflow-x-auto border-b border-slate-200 pb-1">
-                        {CLAIM_DETAIL_TABS.map((item) => (
-                            <button
-                                key={item.key}
-                                type="button"
-                                onClick={() => setTab(item.key)}
-                                className={cn(
-                                    'flex shrink-0 items-center gap-1.5 px-2 pb-1.5 text-[10px] font-medium transition',
-                                    item.key === tab ? 'border-b-2 border-[#1450d8] text-[#1450d8]' : 'text-slate-500 hover:text-slate-800'
-                                )}
-                            >
-                                {(() => {
-                                    const Icon = TAB_ICONS[item.icon] ?? CarOutlined;
-                                    return <Icon className="text-[10.5px]" />;
-                                })()}
-                                {item.label}
-                            </button>
-                        ))}
-                    </div>
-
                     <div className="mb-3 flex items-center gap-2">
                         <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#1450d8] text-[9.5px] font-bold text-white">{section.step}</span>
                         <h4 className="mb-0 text-[12px] font-bold text-slate-900">{section.title}</h4>
                     </div>
 
-                    {tab === 'ai' ? (
-                        <AiAssessmentTab claimId={claim?.id} onOpen={() => navigate(ROUTES.aiIla)} />
-                    ) : saved === null ? (
+                    {saved === null ? (
                         <Spin />
                     ) : (
                         <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
                             {section.fields.map((field) => (
-                                <div key={field.name} className={field.full ? 'sm:col-span-2' : ''}>
+                                <div key={field.name} className={field.full || field.type === 'heading' ? 'sm:col-span-2' : ''}>
                                     <DynamicField
                                         field={{ ...field, disabled: !editMode || !canEdit }}
                                         value={values[field.name]}
@@ -197,12 +131,9 @@ export default function ClaimDetailsPage() {
                         </div>
                     )}
 
-                    <div className="mt-5 grid grid-cols-2 gap-3">
-                        <Button type="primary" icon={<SaveOutlined />} loading={busy === 'save'} disabled={!canEdit} onClick={() => save(false)}>
-                            Save Drift
-                        </Button>
-                        <Button icon={<CloseOutlined />} disabled={!canEdit} onClick={() => setValues({})} className="!text-[#1450d8]">
-                            Clear
+                    <div className="mt-5 flex justify-center">
+                        <Button type="primary" size="large" className="!px-10" loading={busy === 'save'} disabled={!canEdit} onClick={() => save(false)}>
+                            Submit
                         </Button>
                     </div>
                     <p className="mt-2 mb-0 text-[10.5px] text-slate-500">
@@ -224,7 +155,6 @@ export default function ClaimDetailsPage() {
                 />
             </div>
 
-            <ClaimInfoSection claimId={claim?.id} canEdit={canEdit} files={files} />
         </ClaimShell>
     );
 }
