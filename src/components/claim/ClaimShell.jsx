@@ -25,6 +25,7 @@ import { CLAIM_ACTION_BUTTONS, CLAIM_STAGES, META_TONES } from '../../data/claim
 import { api } from '../../api/client.js';
 import { useAppState } from '../../context/AppContext.jsx';
 import ROUTES from '../../constants/routes.js';
+import { MODULES } from '../../constants/navigation.js';
 import { errText, fmtDate, fmtDateTime, fmtShort, formatINR } from '../../utils/format.js';
 import cn from '../../utils/cn.js';
 import ClaimPicker from './ClaimPicker.jsx';
@@ -190,37 +191,55 @@ function ClaimMetaBar({ claim }) {
     );
 }
 
+/**
+ * Journey tracker. A done or current step opens its screen; DMS (last) is always
+ * open -- upload / download the claim's photos and documents at any step.
+ */
 function ClaimStageTracker({ claim }) {
+    const navigate = useNavigate();
+    const { can } = useAppState();
     const done = Object.fromEntries((claim?.stages ?? []).map((s) => [s.key, s]));
+    const dmsAllowed = !can || can(MODULES.dms);
+    const items = [...CLAIM_STAGES, { key: 'dms', label: 'DMS', icon: 'file', always: true }];
 
     return (
         <section className="grid grid-cols-2 gap-x-3 gap-y-3 rounded-xl border border-slate-200 bg-white px-4 py-3 sm:grid-cols-4 xl:grid-cols-8">
-            {CLAIM_STAGES.map((item) => {
+            {items.map((item) => {
                 const state = done[item.key];
                 const isDone = !!state?.done;
+                const current = claim?.stage === item.key;
                 const Icon = isDone ? CheckOutlined : STAGE_ICONS[item.icon] || FileTextOutlined;
+                const route = item.always ? (dmsAllowed ? ROUTES.documentsDms : null) : isDone || current ? STAGE_ROUTES[item.key] : null;
+                const Tag = route ? 'button' : 'div';
 
                 return (
-                    <div key={item.key} className="flex min-w-0 items-center gap-2">
+                    <Tag
+                        key={item.key}
+                        {...(route ? { type: 'button', onClick: () => navigate(route), title: item.always ? 'Upload / download photos and documents' : `Open ${item.label}` } : {})}
+                        className={cn('flex min-w-0 items-center gap-2 text-left', route && 'cursor-pointer rounded-lg hover:bg-slate-50')}
+                    >
                         <span
                             className={cn(
                                 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10.5px]',
-                                isDone
-                                    ? 'bg-emerald-100 text-emerald-600'
-                                    : claim?.stage === item.key
-                                      ? 'bg-blue-100 text-[#1450d8]'
-                                      : 'bg-slate-100 text-slate-400'
+                                item.always
+                                    ? 'bg-[#1450d8] text-white'
+                                    : isDone
+                                      ? 'bg-emerald-100 text-emerald-600'
+                                      : current
+                                        ? 'bg-blue-100 text-[#1450d8]'
+                                        : 'bg-slate-100 text-slate-400'
                             )}
                         >
                             <Icon />
                         </span>
                         <span className="min-w-0">
-                            <span className={cn('block truncate text-[10.5px] font-semibold', isDone ? 'text-slate-800' : 'text-slate-400')}>
+                            <span className={cn('block truncate text-[10.5px] font-semibold', isDone || item.always || current ? 'text-slate-800' : 'text-slate-400')}>
                                 {item.label}
                             </span>
                             {isDone ? <span className="block text-[10px] text-slate-500">{fmtShort(state.at)}</span> : null}
+                            {item.always ? <span className="block text-[10px] text-[#1450d8]">Always open</span> : null}
                         </span>
-                    </div>
+                    </Tag>
                 );
             })}
         </section>
