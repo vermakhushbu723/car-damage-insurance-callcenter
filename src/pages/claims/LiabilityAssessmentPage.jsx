@@ -13,42 +13,42 @@ import { errText, fmtDateTime, formatINR } from '../../utils/format.js';
 import cn from '../../utils/cn.js';
 
 const header = (label) => <span className="text-[11.5px] font-semibold text-slate-800">{label}</span>;
-const cell = (value) => <span className="text-[11.5px] text-slate-700">{value}</span>;
 
-/** Figma summary table (Gross / Depn / IMT 23 / Net, or one Net column). */
+/** Plain number as in the Figma summaries (436470.35, 5500, 0). */
+const plain = (v) => (typeof v === 'number' ? String(Math.round(v * 100) / 100) : v);
+
+/** Figma summary table (Gross / Depn / IMT 23 / Net, or one Net column): bordered cells, centred values. */
 function SummaryCard({ table, children }) {
     return (
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <h3 className="mb-0 px-5 pt-4 pb-3 text-[13.5px] font-bold text-[#1450d8]">{table.title}</h3>
-            <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                    <thead>
-                        <tr className="bg-[#c5daff]">
-                            {table.columns.map((column, index) => (
-                                <th key={column} className={cn('px-3 py-2 text-[10.5px] font-semibold uppercase text-slate-800', index === 0 ? 'text-left' : 'text-right whitespace-nowrap')}>
-                                    {column}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {table.rows.map((row) => (
-                            <tr key={row.key} className="border-t border-slate-100">
-                                <td className={cn('px-3 py-1.5 text-[11.5px]', row.bold ? 'font-bold text-slate-900' : 'text-slate-700')}>{row.label}</td>
-                                {row.text !== undefined ? (
-                                    <td className="px-3 py-1.5 text-right text-[11.5px] text-slate-700">{row.text}</td>
-                                ) : (
-                                    row.values.map((value, index) => (
-                                        <td key={`${row.key}-${index}`} className={cn('px-3 py-1.5 text-right text-[11.5px] whitespace-nowrap', row.bold ? 'font-bold text-slate-900' : 'text-slate-700')}>
-                                            {children ? children(row, value) : formatINR(value)}
-                                        </td>
-                                    ))
-                                )}
-                            </tr>
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-[#fbfbfb] shadow-[0_1px_4px_rgba(15,23,42,0.08)]">
+            <h3 className="mb-0 px-4 pt-4 pb-3 text-[16px] font-bold text-[#1450d8]">{table.title}</h3>
+            <table className="w-full border-collapse">
+                <thead>
+                    <tr className="bg-[#c5daff]">
+                        {table.columns.map((column) => (
+                            <th key={column} className="border border-[#e4e9f2] px-2 py-2 text-center text-[10.5px] font-semibold uppercase text-slate-900">
+                                {column}
+                            </th>
                         ))}
-                    </tbody>
-                </table>
-            </div>
+                    </tr>
+                </thead>
+                <tbody>
+                    {table.rows.map((row) => (
+                        <tr key={row.key}>
+                            <td className={cn('border border-[#e4e9f2] px-2 py-1.5 text-[11.5px] text-slate-900', row.bold ? 'font-bold' : 'font-medium')}>{row.label}</td>
+                            {row.text !== undefined ? (
+                                <td className="border border-[#e4e9f2] px-2 py-1.5 text-center text-[11.5px] text-slate-800">{row.text}</td>
+                            ) : (
+                                row.values.map((value, index) => (
+                                    <td key={`${row.key}-${index}`} className={cn('border border-[#e4e9f2] px-2 py-1.5 text-center text-[11.5px] text-slate-800', row.bold && 'font-bold')}>
+                                        {children ? children(row, value) : plain(value)}
+                                    </td>
+                                ))
+                            )}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </section>
     );
 }
@@ -118,22 +118,6 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
         return undefined;
     };
 
-    const updatePart = (id, field, value, delay = 0) => {
-        setData((d) => ({ ...d, parts: d.parts.map((p) => (p.id === id ? { ...p, [field]: value } : p)) }));
-        clearTimeout(timers.current[`${id}.${field}`]);
-        timers.current[`${id}.${field}`] = setTimeout(
-            () =>
-                api
-                    .patch(`${base}/parts/${id}`, { [field]: value })
-                    .then(setData)
-                    .catch((err) => {
-                        message.error(errText(err));
-                        api.get(base).then(setData);
-                    }),
-            delay
-        );
-    };
-
     const generate = async () => {
         setBusy('report');
         try {
@@ -163,108 +147,41 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
             },
         });
 
-    const sel = (field, options) => (value, row) =>
-        canEdit ? (
-            <Select size="small" value={value} options={options} className="w-[120px]" onChange={(v) => updatePart(row.id, field, v)} />
-        ) : (
-            cell(value)
-        );
-
+    const center = (value) => <span className="block text-center text-[12px] text-slate-800">{value}</span>;
+    const money = (v) => center(formatINR(v));
     const columns = [
-        { title: header('Sr.No'), dataIndex: 'srNo', key: 'srNo', render: cell },
-        { title: header('Part Time'), dataIndex: 'part', key: 'part', render: cell },
-        { title: header('Material'), dataIndex: 'material', key: 'material', render: sel('material', MATERIAL_OPTIONS) },
-        { title: header('Repair/Replace'), dataIndex: 'action', key: 'action', render: sel('action', REPAIR_REPLACE_OPTIONS) },
+        { title: header('Sr.No'), dataIndex: 'srNo', key: 'srNo', align: 'center', render: center },
+        { title: header('Part Time'), dataIndex: 'part', key: 'part', render: (v) => <span className="text-[12px] text-slate-800">{v}</span> },
+        { title: header('Material'), dataIndex: 'material', key: 'material', align: 'center', render: center },
+        { title: header('Repair/Replace'), dataIndex: 'action', key: 'action', align: 'center', render: center },
         {
             title: header('Allowed/Disallowed'),
             dataIndex: 'allowed',
             key: 'allowed',
-            render: (value, row) =>
-                canEdit ? (
-                    sel('allowed', ALLOWED_OPTIONS)(value, row)
-                ) : (
-                    <span className={cn('inline-flex rounded-md px-3 py-1 text-[11px] font-semibold', value === 'Allowed' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600')}>
-                        {value}
-                    </span>
-                ),
+            align: 'center',
+            render: (value) => (
+                <span className={cn('inline-flex rounded-md px-3 py-1 text-[12px] font-medium', value === 'Allowed' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600')}>
+                    {value}
+                </span>
+            ),
         },
-        {
-            title: header('Remarks'),
-            dataIndex: 'remarks',
-            key: 'remarks',
-            render: (value, row) =>
-                canEdit ? (
-                    <Input size="small" value={value} className="w-[140px]" onChange={(e) => updatePart(row.id, 'remarks', e.target.value, 600)} />
-                ) : (
-                    cell(value || '--')
-                ),
-        },
-        { title: header('HSN/SAC Code'), dataIndex: 'hsnCode', key: 'hsnCode', render: cell },
-        {
-            title: header('Part Price'),
-            dataIndex: 'partPrice',
-            key: 'partPrice',
-            render: (value, row) =>
-                canEdit ? (
-                    <InputNumber
-                        size="small"
-                        min={0}
-                        value={value}
-                        className="w-[110px]"
-                        formatter={(v) => formatINR(Number(v || 0))}
-                        parser={(v) => Number(String(v).replace(/[^\d]/g, ''))}
-                        onChange={(v) => updatePart(row.id, 'partPrice', v || 0, 600)}
-                    />
-                ) : (
-                    cell(formatINR(value))
-                ),
-        },
-        { title: header('Dep%'), dataIndex: 'depreciationPct', key: 'depreciationPct', render: (v) => cell(`${v}%`) },
-        {
-            title: header('IMT 23'),
-            dataIndex: 'imt23',
-            key: 'imt23',
-            render: (value, row) =>
-                canEdit ? (
-                    <Select size="small" value={!!value} options={IMT23_OPTIONS} className="w-[80px]" onChange={(v) => updatePart(row.id, 'imt23', v)} />
-                ) : (
-                    cell(value ? 'Yes' : 'No')
-                ),
-        },
-        { title: header('Dep Ammount'), dataIndex: 'depAmount', key: 'depAmount', align: 'right', render: (v) => cell(formatINR(v)) },
-        { title: header('Net Ammount'), dataIndex: 'netAmount', key: 'netAmount', align: 'right', render: (v) => cell(formatINR(v)) },
-        { title: header('GST%'), dataIndex: 'gstPct', key: 'gstPct', align: 'right', render: (v) => cell(`${v}%`) },
-        { title: header('GST Ammount'), dataIndex: 'gstAmount', key: 'gstAmount', align: 'right', render: (v) => cell(formatINR(v)) },
-        ...[
-            ['removeRefit', 'Remove & RFT'],
-            ['repairLabour', 'Repair Labour'],
-            ['paintLabour', 'Paint Labour'],
-        ].map(([field, label]) => ({
-            title: header(label),
-            dataIndex: field,
-            key: field,
-            align: 'right',
-            render: (value, row) =>
-                canEdit ? (
-                    <InputNumber
-                        size="small"
-                        min={0}
-                        value={value}
-                        className="w-[95px]"
-                        formatter={(v) => formatINR(Number(v || 0))}
-                        parser={(v) => Number(String(v).replace(/[^\d]/g, ''))}
-                        onChange={(v) => updatePart(row.id, field, v ?? 0, 600)}
-                    />
-                ) : (
-                    cell(formatINR(value))
-                ),
-        })),
+        { title: header('Remarks'), dataIndex: 'remarks', key: 'remarks', align: 'center', render: (v) => center(v || '--') },
+        { title: header('HSN/SAC Code'), dataIndex: 'hsnCode', key: 'hsnCode', align: 'center', render: center },
+        { title: header('Part Price'), dataIndex: 'partPrice', key: 'partPrice', align: 'center', render: money },
+        { title: header('Dep%'), dataIndex: 'depreciationPct', key: 'depreciationPct', align: 'center', render: (v) => center(`${v}%`) },
+        { title: header('Dep Ammount'), dataIndex: 'depAmount', key: 'depAmount', align: 'center', render: money },
+        { title: header('Net Ammount'), dataIndex: 'netAmount', key: 'netAmount', align: 'center', render: money },
+        { title: header('GST%'), dataIndex: 'gstPct', key: 'gstPct', align: 'center', render: (v) => center(`${v}%`) },
+        { title: header('GST Ammount'), dataIndex: 'gstAmount', key: 'gstAmount', align: 'center', render: money },
+        { title: header('Remove & RFT'), dataIndex: 'removeRefit', key: 'removeRefit', align: 'center', render: money },
+        { title: header('Repair Labour'), dataIndex: 'repairLabour', key: 'repairLabour', align: 'center', render: money },
+        { title: header('Paint Labour'), dataIndex: 'paintLabour', key: 'paintLabour', align: 'center', render: money },
         {
             title: header('Total Allowed'),
             dataIndex: 'totalAllowed',
             key: 'totalAllowed',
-            align: 'right',
-            render: (v) => <span className="text-[11.5px] font-semibold text-slate-900">{formatINR(v)}</span>,
+            align: 'center',
+            render: (v) => center(formatINR(v)),
         },
         {
             title: header('Action'),
@@ -329,14 +246,13 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
             <InputNumber
                 size="small"
                 min={0}
+                variant="borderless"
                 value={Math.abs(value)}
-                className="!w-[100px]"
-                formatter={(v) => formatINR(Number(v || 0))}
-                parser={(v) => Number(String(v).replace(/[^\d]/g, ''))}
+                className="!w-[96px] [&_input]:!text-center"
                 onChange={(v) => saveCharges({ [row.key]: v || 0 })}
             />
         ) : (
-            <span className={row.deduction && value ? 'text-red-600' : undefined}>{formatINR(value)}</span>
+            <span className={row.deduction && value ? 'text-red-600' : undefined}>{plain(Math.abs(value))}</span>
         );
 
     if (claim?.status === 'Draft') {
@@ -422,14 +338,14 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
                         fibre glass 30%, glass nil; paint material 50%. IMT 23 = 50% deduction on that part.
                     </p>
 
-                    <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-                        <SummaryCard table={data.tables.parts} />
-                        <SummaryCard table={data.tables.labour} />
-                        <SummaryCard table={data.tables.final}>{settlementCell}</SummaryCard>
-                        <section className="rounded-xl border border-slate-200 bg-white px-5 pt-4 pb-4">
-                            <h3 className="mb-2 text-[13.5px] font-bold text-[#1450d8]">3. Remarks</h3>
+                    <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-[1.35fr_1fr]">
+                        <div className="flex min-w-0 flex-col gap-3">
+                            <SummaryCard table={data.tables.parts} />
+                            <SummaryCard table={data.tables.labour} />
+                        <section className="rounded-xl border border-slate-200 bg-[#fbfbfb] px-4 pt-4 pb-4 shadow-[0_1px_4px_rgba(15,23,42,0.08)]">
+                            <h3 className="mb-2 text-[16px] font-bold text-[#1450d8]">3. Remarks</h3>
                             <Input.TextArea
-                                rows={6}
+                                rows={4}
                                 disabled={!canEdit}
                                 defaultValue={data.remarks}
                                 key={`remarks-${data.status}`}
@@ -437,6 +353,10 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
                                 onChange={(e) => saveCharges({ remarks: e.target.value }, 900)}
                             />
                         </section>
+                        </div>
+                        <div className="min-w-0">
+                            <SummaryCard table={data.tables.final}>{settlementCell}</SummaryCard>
+                        </div>
                     </div>
 
                     <Modal open={!!editing} title={editing ? `Edit Part · ${editing.part}` : ''} okText="Save" onOk={saveEdit} onCancel={() => setEditing(null)} destroyOnHidden>
