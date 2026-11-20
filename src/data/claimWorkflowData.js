@@ -8,7 +8,7 @@
 export const CLAIM_STAGES = [
     { key: 'intimation', label: 'Intimation', icon: 'check' },
     { key: 'handler-allocation', label: 'Handler Allocation', icon: 'user' },
-    { key: 'claim-details', label: 'Claim Details', icon: 'search', hidden: true },
+    { key: 'claim-details', label: 'Claim Details', icon: 'search' },
     { key: 'ai-ila', label: 'AI ILA', icon: 'sparkle' },
     { key: 'handler-ila', label: 'Handler ILA', icon: 'file' },
     { key: 'fla', label: 'FLA', icon: 'shield' },

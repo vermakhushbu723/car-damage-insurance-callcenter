@@ -202,8 +202,7 @@ function ClaimStageTracker({ claim }) {
     const done = Object.fromEntries((claim?.stages ?? []).map((s) => [s.key, s]));
     const dmsAllowed = !can || can(MODULES.dms);
     const items = [...CLAIM_STAGES.filter((s) => !s.hidden), { key: 'dms', label: 'DMS', icon: 'file', always: true }];
-    // Claim Details (hidden circle) being current lights Handler Allocation's arrow onwards like Figma
-    const currentKey = claim?.stage === 'claim-details' ? null : claim?.stage;
+    const currentKey = claim?.stage;
 
     return (
         <section className="overflow-x-auto rounded-xl bg-white px-2 py-2">

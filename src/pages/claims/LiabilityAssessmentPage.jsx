@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { App, Button, Input, InputNumber, Select, Spin, Table } from 'antd';
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { App, Button, Input, InputNumber, Modal, Popconfirm, Select, Spin, Table } from 'antd';
+import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
 import { ALLOWED_OPTIONS, IMT23_OPTIONS, MATERIAL_OPTIONS, REPAIR_REPLACE_OPTIONS } from '../../data/liabilityData.js';
@@ -21,11 +21,11 @@ function SummaryCard({ table, children }) {
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
             <h3 className="mb-0 px-5 pt-4 pb-3 text-[13.5px] font-bold text-[#1450d8]">{table.title}</h3>
             <div className="overflow-x-auto">
-                <table className="w-full min-w-[520px] border-collapse">
+                <table className="w-full border-collapse">
                     <thead>
                         <tr className="bg-[#c5daff]">
                             {table.columns.map((column, index) => (
-                                <th key={column} className={cn('px-4 py-2.5 text-[11px] font-semibold uppercase text-slate-800', index === 0 ? 'text-left' : 'text-right')}>
+                                <th key={column} className={cn('px-3 py-2 text-[10.5px] font-semibold uppercase text-slate-800', index === 0 ? 'text-left' : 'text-right whitespace-nowrap')}>
                                     {column}
                                 </th>
                             ))}
@@ -34,12 +34,12 @@ function SummaryCard({ table, children }) {
                     <tbody>
                         {table.rows.map((row) => (
                             <tr key={row.key} className="border-t border-slate-100">
-                                <td className={cn('px-4 py-2 text-[11.5px]', row.bold ? 'font-bold text-slate-900' : 'text-slate-700')}>{row.label}</td>
+                                <td className={cn('px-3 py-1.5 text-[11.5px]', row.bold ? 'font-bold text-slate-900' : 'text-slate-700')}>{row.label}</td>
                                 {row.text !== undefined ? (
-                                    <td className="px-4 py-2 text-right text-[11.5px] text-slate-700">{row.text}</td>
+                                    <td className="px-3 py-1.5 text-right text-[11.5px] text-slate-700">{row.text}</td>
                                 ) : (
                                     row.values.map((value, index) => (
-                                        <td key={`${row.key}-${index}`} className={cn('px-4 py-2 text-right text-[11.5px]', row.bold ? 'font-bold text-slate-900' : 'text-slate-700')}>
+                                        <td key={`${row.key}-${index}`} className={cn('px-3 py-1.5 text-right text-[11.5px] whitespace-nowrap', row.bold ? 'font-bold text-slate-900' : 'text-slate-700')}>
                                             {children ? children(row, value) : formatINR(value)}
                                         </td>
                                     ))
@@ -69,6 +69,7 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
     const { claim, reloadClaim, can } = useAppState();
     const [data, setData] = useState(null);
     const [busy, setBusy] = useState(null);
+    const [editing, setEditing] = useState(null); // part in the Action > edit dialog
     const [filters, setFilters] = useState({ part: '', material: undefined, action: undefined, allowed: undefined, remarks: '' });
     const timers = useRef({});
 
@@ -230,7 +231,83 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
                     cell(value ? 'Yes' : 'No')
                 ),
         },
+        { title: header('Dep Ammount'), dataIndex: 'depAmount', key: 'depAmount', align: 'right', render: (v) => cell(formatINR(v)) },
+        { title: header('Net Ammount'), dataIndex: 'netAmount', key: 'netAmount', align: 'right', render: (v) => cell(formatINR(v)) },
+        { title: header('GST%'), dataIndex: 'gstPct', key: 'gstPct', align: 'right', render: (v) => cell(`${v}%`) },
+        { title: header('GST Ammount'), dataIndex: 'gstAmount', key: 'gstAmount', align: 'right', render: (v) => cell(formatINR(v)) },
+        ...[
+            ['removeRefit', 'Remove & RFT'],
+            ['repairLabour', 'Repair Labour'],
+            ['paintLabour', 'Paint Labour'],
+        ].map(([field, label]) => ({
+            title: header(label),
+            dataIndex: field,
+            key: field,
+            align: 'right',
+            render: (value, row) =>
+                canEdit ? (
+                    <InputNumber
+                        size="small"
+                        min={0}
+                        value={value}
+                        className="w-[95px]"
+                        formatter={(v) => formatINR(Number(v || 0))}
+                        parser={(v) => Number(String(v).replace(/[^\d]/g, ''))}
+                        onChange={(v) => updatePart(row.id, field, v ?? 0, 600)}
+                    />
+                ) : (
+                    cell(formatINR(value))
+                ),
+        })),
+        {
+            title: header('Total Allowed'),
+            dataIndex: 'totalAllowed',
+            key: 'totalAllowed',
+            align: 'right',
+            render: (v) => <span className="text-[11.5px] font-semibold text-slate-900">{formatINR(v)}</span>,
+        },
+        {
+            title: header('Action'),
+            key: 'action',
+            fixed: 'right',
+            render: (_, row) => (
+                <span className="flex items-center gap-3">
+                    <button type="button" aria-label={`Edit ${row.part}`} disabled={!canEdit} onClick={() => setEditing({ ...row })} className="text-[#1450d8] disabled:text-slate-300">
+                        <EditOutlined />
+                    </button>
+                    <Popconfirm title={`Remove ${row.part}?`} okText="Remove" okButtonProps={{ danger: true }} disabled={!canEdit} onConfirm={() => removePart(row)}>
+                        <button type="button" aria-label={`Delete ${row.part}`} disabled={!canEdit} className="text-red-500 disabled:text-slate-300">
+                            <DeleteOutlined />
+                        </button>
+                    </Popconfirm>
+                </span>
+            ),
+        },
     ];
+
+    const removePart = async (row) => {
+        try {
+            setData(await api.del(`${base}/parts/${row.id}`));
+            message.success(`${row.part} removed`);
+        } catch (err) {
+            message.error(errText(err));
+        }
+    };
+    const saveEdit = async () => {
+        const e = editing;
+        try {
+            setData(
+                await api.patch(`${base}/parts/${e.id}`, {
+                    part: e.part, material: e.material, action: e.action, allowed: e.allowed, remarks: e.remarks ?? '',
+                    partPrice: e.partPrice ?? 0, removeRefit: e.removeRefit, repairLabour: e.repairLabour, paintLabour: e.paintLabour, imt23: !!e.imt23,
+                })
+            );
+            setEditing(null);
+            message.success('Part updated');
+        } catch (err) {
+            message.error(errText(err));
+        }
+    };
 
     // Final Settlement Summary amounts + 3. Remarks (PUT .../charges, debounced)
     const saveCharges = (patch, delay = 700) => {
@@ -253,7 +330,7 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
                 size="small"
                 min={0}
                 value={Math.abs(value)}
-                className="w-[120px]"
+                className="!w-[100px]"
                 formatter={(v) => formatINR(Number(v || 0))}
                 parser={(v) => Number(String(v).replace(/[^\d]/g, ''))}
                 onChange={(v) => saveCharges({ [row.key]: v || 0 })}
@@ -335,7 +412,7 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
 
                         <footer className="flex justify-end gap-6 border-t border-slate-100 px-5 py-3 text-[12.5px] font-bold text-slate-900">
                             <span>Total Parts Allowed Ammount</span>
-                            <span>{formatINR(data.totals.partsPriceAllowed)}</span>
+                            <span>{formatINR(data.totals.totalAllowed ?? data.totals.partsPriceAllowed)}</span>
                         </footer>
                     </section>
 
@@ -345,26 +422,52 @@ export default function LiabilityAssessmentPage({ kind = 'liability' }) {
                         fibre glass 30%, glass nil; paint material 50%. IMT 23 = 50% deduction on that part.
                     </p>
 
-                    <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[1.45fr_1fr]">
-                        <div className="flex min-w-0 flex-col gap-4">
-                            <SummaryCard table={data.tables.parts} />
-                            <SummaryCard table={data.tables.labour} />
-                            <section className="rounded-xl border border-slate-200 bg-white px-5 pt-4 pb-4">
-                                <h3 className="mb-2 text-[13.5px] font-bold text-[#1450d8]">3. Remarks</h3>
-                                <Input.TextArea
-                                    rows={3}
-                                    disabled={!canEdit}
-                                    defaultValue={data.remarks}
-                                    key={`remarks-${data.status}`}
-                                    placeholder="Remarks for this assessment (shown on the report)"
-                                    onChange={(e) => saveCharges({ remarks: e.target.value }, 900)}
-                                />
-                            </section>
-                        </div>
-                        <div className="min-w-0">
-                            <SummaryCard table={data.tables.final}>{settlementCell}</SummaryCard>
-                        </div>
+                    <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+                        <SummaryCard table={data.tables.parts} />
+                        <SummaryCard table={data.tables.labour} />
+                        <SummaryCard table={data.tables.final}>{settlementCell}</SummaryCard>
+                        <section className="rounded-xl border border-slate-200 bg-white px-5 pt-4 pb-4">
+                            <h3 className="mb-2 text-[13.5px] font-bold text-[#1450d8]">3. Remarks</h3>
+                            <Input.TextArea
+                                rows={6}
+                                disabled={!canEdit}
+                                defaultValue={data.remarks}
+                                key={`remarks-${data.status}`}
+                                placeholder="Remarks for this assessment (shown on the report)"
+                                onChange={(e) => saveCharges({ remarks: e.target.value }, 900)}
+                            />
+                        </section>
                     </div>
+
+                    <Modal open={!!editing} title={editing ? `Edit Part · ${editing.part}` : ''} okText="Save" onOk={saveEdit} onCancel={() => setEditing(null)} destroyOnHidden>
+                        {editing ? (
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    ['part', 'Part Name', 'text'],
+                                    ['material', 'Material', MATERIAL_OPTIONS],
+                                    ['action', 'Repair/Replace', REPAIR_REPLACE_OPTIONS],
+                                    ['allowed', 'Allowed/Disallowed', ALLOWED_OPTIONS],
+                                    ['remarks', 'Remarks', 'text'],
+                                    ['partPrice', 'Part Price', 'number'],
+                                    ['removeRefit', 'Remove & RFT', 'number'],
+                                    ['repairLabour', 'Repair Labour', 'number'],
+                                    ['paintLabour', 'Paint Labour', 'number'],
+                                    ['imt23', 'IMT 23', IMT23_OPTIONS],
+                                ].map(([f, label, type]) => (
+                                    <label key={f} className="text-[11.5px] text-slate-600">
+                                        {label}
+                                        {type === 'text' ? (
+                                            <Input value={editing[f] ?? ''} onChange={(ev) => setEditing((x) => ({ ...x, [f]: ev.target.value }))} />
+                                        ) : type === 'number' ? (
+                                            <InputNumber min={0} className="!w-full" value={editing[f]} onChange={(v) => setEditing((x) => ({ ...x, [f]: v ?? 0 }))} />
+                                        ) : (
+                                            <Select className="w-full" value={f === 'imt23' ? !!editing[f] : editing[f]} options={type} onChange={(v) => setEditing((x) => ({ ...x, [f]: v }))} />
+                                        )}
+                                    </label>
+                                ))}
+                            </div>
+                        ) : null}
+                    </Modal>
 
                     <div className="flex flex-wrap justify-end gap-3">
                         <Button disabled={!canEdit} onClick={submit}>
