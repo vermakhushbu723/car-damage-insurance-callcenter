@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { navForUser } from '../../constants/navigation.js';
 import { useAppState } from '../../context/AppContext.jsx';
 import cn from '../../utils/cn.js';
+import Logo, { LogoMark } from '../common/Logo.jsx';
 
 export const SIDEBAR_WIDTH = 208;
 export const SIDEBAR_COLLAPSED_WIDTH = 60;
@@ -61,6 +62,20 @@ export default function Sidebar({ onNavigate, onClose, collapsed = false }) {
             style={{ width: collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH }}
             className="relative flex h-full shrink-0 flex-col bg-[#1a47c8] text-white transition-[width] duration-200"
         >
+            <button
+                type="button"
+                onClick={() => go('/')}
+                className={cn('flex h-[54px] shrink-0 items-center border-b border-white/15', collapsed ? 'justify-center' : 'px-4')}
+                aria-label="IBima Assist home"
+            >
+                {collapsed ? (
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[#1450d8]">
+                        <LogoMark className="h-5 w-5" />
+                    </span>
+                ) : (
+                    <Logo onDark />
+                )}
+            </button>
 
             {onClose ? (
                 <div className="flex justify-end px-3 pt-3">

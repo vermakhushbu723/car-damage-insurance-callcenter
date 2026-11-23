@@ -24,6 +24,18 @@ body,
     height: 100%;
 }
 
+/* The whole portal at 90%: text, headings, icons and tables all a little smaller. */
+html {
+    zoom: 0.9;
+}
+/* Full-height boxes must fill the window again after the zoom. */
+.h-screen {
+    height: calc(100vh / 0.9) !important;
+}
+.min-h-screen {
+    min-height: calc(100vh / 0.9) !important;
+}
+
 body {
     margin: 0;
     font-size: 12.5px;

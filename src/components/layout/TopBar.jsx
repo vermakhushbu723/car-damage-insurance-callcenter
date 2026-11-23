@@ -5,10 +5,9 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { TOP_NAV_ITEMS } from '../../constants/navigation.js';
 import { logout, switchRole } from '../../auth/session.js';
 import { useAppState } from '../../context/AppContext.jsx';
-import { isApprover, isClaimHandler, isNationalManager, landingForUser } from '../../constants/nationalManager.js';
+import { isApprover, isClaimHandler, landingForUser } from '../../constants/nationalManager.js';
 import ROUTES from '../../constants/routes.js';
 import { goToRole, loginUrl } from '../../portal.js';
-import Logo from '../common/Logo.jsx';
 
 function NavPill({ item }) {
     const Icon = item.icon;
@@ -138,9 +137,6 @@ export default function TopBar({ onMenuClick }) {
                     <MenuOutlined />
                 </button>
 
-                <button type="button" onClick={() => navigate('/')} className="shrink-0 cursor-pointer">
-                    <Logo subtitle={isNationalManager(user) ? user.roleName : undefined} />
-                </button>
 
                 <nav className="ml-auto hidden items-center gap-2 lg:flex">
                     {TOP_NAV_ITEMS.map((item) => (

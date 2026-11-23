@@ -25,7 +25,7 @@ export default function Logo({ className = '', subtitle = 'Claim Managment', onD
             </span>
             <span className="leading-tight">
                 <span className={cn('block text-[11.5px] font-bold tracking-wide', onDark ? 'text-white' : 'text-[#0b2f7a]')}>
-                    IBima <span className="text-orange-500">Assist</span>
+                    IBima <span className="text-orange-400">Assist</span>
                 </span>
                 {subtitle ? (
                     <span className={cn('block text-[9px] font-semibold tracking-[0.1em]', onDark ? 'text-white' : 'text-[#0b2f7a]')}>{subtitle}</span>

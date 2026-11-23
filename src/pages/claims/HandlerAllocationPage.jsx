@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 
 import { HANDLER_FILTERS, REASSIGNMENT_REASONS, REASSIGNMENT_REMARKS } from '../../data/handlerData.js';
-import ClaimShell from '../../components/claim/ClaimShell.jsx';
+import ClaimShell, { ViewOnlyNote, stepDone } from '../../components/claim/ClaimShell.jsx';
 import { api } from '../../api/client.js';
 import { useAppState } from '../../context/AppContext.jsx';
 import { MODULES } from '../../constants/navigation.js';
@@ -139,10 +139,13 @@ export default function HandlerAllocationPage() {
     ];
 
     const h = current?.current;
-    const canEdit = can(MODULES.handler, 'edit') && claim?.status === 'Open';
+    // Handler allocated = a completed step: view only (no change of handler from here).
+    const allocated = stepDone(claim, 'handler-allocation');
+    const canEdit = can(MODULES.handler, 'edit') && claim?.status === 'Open' && !allocated;
 
     return (
         <ClaimShell title="Handler Allocation" subtitle="Allocate Claims Based On Workload And Expertise" stage="handler-allocation">
+            {allocated ? <ViewOnlyNote step="Handler Allocation" /> : null}
             <section className="rounded-xl border border-slate-200 bg-white px-5 py-5">
                 <div className="flex flex-col gap-5 xl:flex-row xl:items-start">
                     <h2 className="mb-0 w-[130px] shrink-0 text-[15px] font-bold text-[#1450d8]">Claim Handler</h2>

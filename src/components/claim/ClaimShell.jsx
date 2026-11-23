@@ -57,6 +57,18 @@ const ACTION_ICONS = {
     audit: AuditOutlined,
 };
 
+/** Is this journey step of the claim completed? (completed steps are view only) */
+export const stepDone = (claim, key) => !!claim?.stages?.find((s) => s.key === key)?.done;
+
+/** Note shown on a completed step: it can be opened again but not changed. */
+export function ViewOnlyNote({ step }) {
+    return (
+        <p className="mb-0 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-[11.5px] text-emerald-700">
+            {step} is completed -- view only. Nothing on this step can be edited or deleted now.
+        </p>
+    );
+}
+
 /** Screen of each journey step (Next goes to the claim's next open step). */
 export const STAGE_ROUTES = {
     intimation: ROUTES.intimation,

@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 
 import { CLAIM_DETAIL_SECTIONS, CLAIM_DETAIL_TABS } from '../../data/claimDetailsData.js';
-import ClaimShell from '../../components/claim/ClaimShell.jsx';
+import ClaimShell, { ViewOnlyNote, stepDone } from '../../components/claim/ClaimShell.jsx';
 import DocumentViewer from '../../components/claim/DocumentViewer.jsx';
 import DynamicField from '../../components/intimation/DynamicField.jsx';
 import DmsDocumentsPanel from '../../components/intimation/DmsDocumentsPanel.jsx';
@@ -59,7 +59,9 @@ export default function ClaimDetailsPage() {
         if (next) setTab(next.key);
     };
     const handleChange = (name, value) => setValues((prev) => ({ ...prev, [name]: value }));
-    const canEdit = can(MODULES.details, 'edit') && claim?.status !== 'Draft';
+    // Claim Details completed (Next) = view only.
+    const completed = stepDone(claim, 'claim-details');
+    const canEdit = can(MODULES.details, 'edit') && claim?.status !== 'Draft' && !completed;
 
     const save = async (complete) => {
         setBusy(complete ? 'next' : 'save');
@@ -87,9 +89,10 @@ export default function ClaimDetailsPage() {
             title="Claim Details"
             subtitle="Access Complete Claim Information And Activity"
             stage="claim-details"
-            onNext={canEdit ? () => save(true) : undefined}
+            onNext={canEdit ? () => save(true) : () => navigate(ROUTES.aiIla)}
             nextLoading={busy === 'next'}
         >
+            {completed ? <ViewOnlyNote step="Claim Details" /> : null}
             <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[330px_minmax(0,1fr)_260px]">
                 <section className="rounded-xl border border-slate-200 bg-white px-4 py-4">
                     <header className="mb-3 flex items-center justify-between gap-3">

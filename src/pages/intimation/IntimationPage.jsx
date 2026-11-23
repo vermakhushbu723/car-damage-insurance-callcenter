@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { App, Button, Spin } from 'antd';
+import { App, Button, ConfigProvider, Spin } from 'antd';
 import dayjs from 'dayjs';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -8,7 +8,7 @@ import {
     INTIMATION_META_FIELDS,
     INTIMATION_RIGHT_SECTIONS,
 } from '../../config/intimationForm.js';
-import ClaimShell from '../../components/claim/ClaimShell.jsx';
+import ClaimShell, { ViewOnlyNote } from '../../components/claim/ClaimShell.jsx';
 import FormSection from '../../components/intimation/FormSection.jsx';
 import DynamicField from '../../components/intimation/DynamicField.jsx';
 import LinkSection from '../../components/intimation/LinkSection.jsx';
@@ -191,7 +191,9 @@ export default function IntimationPage() {
         if (editing) api.patch(`/claims/${editing.id}`, { link: { autoReminder: checked } }).catch((err) => message.error(errText(err)));
     };
 
-    const canEdit = editing ? can(MODULES.intimation, 'edit') : can(MODULES.intimation, 'create');
+    // A submitted intimation is a completed step: view only.
+    const submitted = !!editing && editing.status !== 'Draft';
+    const canEdit = !submitted && (editing ? can(MODULES.intimation, 'edit') : can(MODULES.intimation, 'create'));
     const loadingClaim = !isNew && claimId && !claim;
 
     return (
@@ -210,6 +212,8 @@ export default function IntimationPage() {
             ) : (
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
                     <div className="flex min-w-0 flex-1 flex-col gap-4">
+                        {submitted ? <ViewOnlyNote step="Intimation" /> : null}
+                        <ConfigProvider componentDisabled={submitted}>
                         <section className="grid grid-cols-1 gap-x-6 gap-y-4 rounded-xl border border-slate-200 bg-white px-4 py-4 sm:grid-cols-3 xl:grid-cols-5">
                             {metaFields.map((field) => (
                                 <DynamicField key={field.name} field={field} value={values[field.name]} values={values} onChange={handleChange} />
@@ -228,6 +232,7 @@ export default function IntimationPage() {
                                 ))}
                             </div>
                         </div>
+                        </ConfigProvider>
 
                         <LinkSection
                             link={link}
@@ -242,14 +247,16 @@ export default function IntimationPage() {
                             assistId={editing?.id}
                         />
 
-                        <div className="grid grid-cols-1 gap-4 pb-2 sm:grid-cols-2">
-                            <Button className="!h-9 !border-[#1450d8] !text-[#1450d8]" loading={busy === 'save'} disabled={!canEdit} onClick={onSave}>
-                                Save Details
-                            </Button>
-                            <Button type="primary" className="!h-9" loading={busy === 'submit'} disabled={!canEdit} onClick={onSubmit}>
-                                {editing && editing.status !== 'Draft' ? 'Update Details' : 'Submit Details'}
-                            </Button>
-                        </div>
+                        {submitted ? null : (
+                            <div className="grid grid-cols-1 gap-4 pb-2 sm:grid-cols-2">
+                                <Button className="!h-9 !border-[#1450d8] !text-[#1450d8]" loading={busy === 'save'} disabled={!canEdit} onClick={onSave}>
+                                    Save Details
+                                </Button>
+                                <Button type="primary" className="!h-9" loading={busy === 'submit'} disabled={!canEdit} onClick={onSubmit}>
+                                    Submit Details
+                                </Button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="w-full xl:w-[240px] xl:shrink-0">

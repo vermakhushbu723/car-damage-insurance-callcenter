@@ -10,6 +10,7 @@ import { goToRole, loginUrl } from '../../portal.js';
 import { useAppState } from '../../context/AppContext.jsx';
 import { errText, fmtDateTime } from '../../utils/format.js';
 import cn from '../../utils/cn.js';
+import Logo, { LogoMark } from '../common/Logo.jsx';
 
 export const NM_SIDEBAR_WIDTH = 232;
 export const NM_SIDEBAR_COLLAPSED_WIDTH = 60;
@@ -101,6 +102,20 @@ export default function NmSidebar({ collapsed = false, onNavigate, onClose }) {
             style={{ width: collapsed ? NM_SIDEBAR_COLLAPSED_WIDTH : NM_SIDEBAR_WIDTH }}
             className="flex h-full shrink-0 flex-col bg-[#0b4fc9] text-white transition-[width] duration-200"
         >
+            <button
+                type="button"
+                onClick={() => go('/')}
+                className={cn('flex h-[54px] shrink-0 items-center border-b border-white/15', collapsed ? 'justify-center' : 'px-4')}
+                aria-label="IBima Assist home"
+            >
+                {collapsed ? (
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[#1450d8]">
+                        <LogoMark className="h-5 w-5" />
+                    </span>
+                ) : (
+                    <Logo onDark />
+                )}
+            </button>
             {onClose ? (
                 <div className="flex justify-end px-3 pt-3">
                     <button type="button" aria-label="Close menu" onClick={onClose} className="text-white/80 hover:text-white">
