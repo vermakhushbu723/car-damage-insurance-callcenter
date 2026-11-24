@@ -245,6 +245,7 @@ export default function IntimationPage() {
                             sending={busy === 'link'}
                             onAutoReminder={onAutoReminder}
                             assistId={editing?.id}
+                            insurerClaimNumber={values.insurerClaimNumber}
                         />
 
                         {submitted ? null : (

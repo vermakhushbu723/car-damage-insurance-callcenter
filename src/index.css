@@ -44,6 +44,29 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+/* ---- View-only (disabled) fields: same dark text as normal fields, just not editable ---- */
+.ant-input[disabled],
+.ant-input-disabled,
+.ant-input-affix-wrapper-disabled,
+.ant-input-number-disabled .ant-input-number-input,
+.ant-picker-disabled input,
+.ant-select-disabled .ant-select-selection-item,
+.ant-select-disabled .ant-select-content,
+.ant-select-disabled .ant-select-content-value,
+textarea.ant-input[disabled] {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+}
+.ant-checkbox-disabled + span,
+.ant-radio-disabled + span {
+    color: #0f172a !important;
+}
+.ant-checkbox-disabled.ant-checkbox-checked .ant-checkbox-inner,
+.ant-radio-disabled.ant-radio-checked .ant-radio-inner {
+    background-color: #1450d8 !important;
+    border-color: #1450d8 !important;
+}
+
 /* ---- Ant Design tweaks so the controls match the mock-ups ---- */
 .ant-input,
 .ant-input-affix-wrapper,

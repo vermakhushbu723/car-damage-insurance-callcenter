@@ -98,7 +98,7 @@ export default function NmWorkshopPage() {
                         <Text label="City" placeholder="Enter city" />
                         <Text label="District" placeholder="Enter district" />
                         <Pick label="State" placeholder="Select State" />
-                        <Text label="PIN" placeholder="6 Digit Code" />
+                        <Text label="PIN" placeholder="Enter 6-digit PIN" />
                         <Pick label="Country" placeholder="Select Country" options={['India']} />
                         <Pick label="Type of Repairer" placeholder="Pvt Car, Commercial Vehicle, Two Wheeler, Misc-D" options={REPAIRER_TYPES} />
                         <Pick label="Category" placeholder="Select category" />
@@ -110,8 +110,8 @@ export default function NmWorkshopPage() {
                     </Section>
 
                     <Section id="implement" n={2} title="Implement">
-                        <Text label="Empanelled" placeholder="Eg. MS_1234567890" />
-                        <Text label="Empanelment code (per insurer)" placeholder="Alpha Numeric Code" />
+                        <Text label="Empanelled" placeholder="Enter Empanelment No." />
+                        <Text label="Empanelment code (per insurer)" placeholder="Enter Empanelment Code" />
                         <DateF label="Empanelment valid upto" placeholder="DD-MM-YYYY" />
                     </Section>
 

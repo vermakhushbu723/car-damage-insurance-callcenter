@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { App, Avatar, Dropdown, Form, Input, Modal, Tooltip } from 'antd';
+import { TOP_NAV_ITEMS } from '../../constants/navigation.js';
 import { CloseOutlined, DownOutlined, UserOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -10,7 +11,7 @@ import { goToRole, loginUrl } from '../../portal.js';
 import { useAppState } from '../../context/AppContext.jsx';
 import { errText, fmtDateTime } from '../../utils/format.js';
 import cn from '../../utils/cn.js';
-import Logo, { LogoMark } from '../common/Logo.jsx';
+import Logo from '../common/Logo.jsx';
 
 export const NM_SIDEBAR_WIDTH = 232;
 export const NM_SIDEBAR_COLLAPSED_WIDTH = 60;
@@ -105,15 +106,13 @@ export default function NmSidebar({ collapsed = false, onNavigate, onClose }) {
             <button
                 type="button"
                 onClick={() => go('/')}
-                className={cn('flex h-[54px] shrink-0 items-center border-b border-white/15', collapsed ? 'justify-center' : 'px-4')}
+                className={cn('flex h-[54px] shrink-0 items-center bg-white', collapsed ? 'justify-center' : 'px-4')}
                 aria-label="IBima Assist home"
             >
                 {collapsed ? (
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[#1450d8]">
-                        <LogoMark className="h-5 w-5" />
-                    </span>
+                    <Logo height={30} className="max-w-[48px] object-contain object-left" />
                 ) : (
-                    <Logo onDark />
+                    <Logo height={40} />
                 )}
             </button>
             {onClose ? (
@@ -170,6 +169,25 @@ export default function NmSidebar({ collapsed = false, onNavigate, onClose }) {
                     </div>
                 ))}
             </nav>
+
+            {/* Home / Process & Training / Contact Us (moved from the top bar) */}
+            <div className="shrink-0 border-t border-white/15 py-2">
+                {TOP_NAV_ITEMS.map((item) => {
+                    const Icon = item.icon;
+                    const btn = (
+                        <button
+                            key={item.key}
+                            type="button"
+                            onClick={() => go(item.path)}
+                            className={cn('flex w-full items-center text-left text-[12px] font-medium text-white/90 transition hover:bg-white/10', collapsed ? 'justify-center rounded-lg py-2' : 'gap-3 px-4 py-2')}
+                        >
+                            <Icon className="text-[13px]" />
+                            {collapsed ? null : <span className="truncate">{item.label}</span>}
+                        </button>
+                    );
+                    return collapsed ? <Tooltip key={item.key} title={item.label} placement="right">{btn}</Tooltip> : btn;
+                })}
+            </div>
 
             <div className="p-2">
                 <Dropdown menu={menu} trigger={['click']} placement="topLeft">

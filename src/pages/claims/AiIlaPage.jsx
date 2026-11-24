@@ -261,7 +261,7 @@ export default function AiIlaPage() {
                 <Form form={form} layout="vertical" preserve={false} initialValues={editor?.init}>
                     {editor?.mode !== 'box' ? (
                         <Form.Item name="part" label="Vehicle Part" rules={[{ required: true, min: 2, message: 'Enter the part name' }]}>
-                            <Input placeholder="Front Bumper" />
+                            <Input placeholder="Enter Part Name" />
                         </Form.Item>
                     ) : null}
                     {editor?.mode === 'add' ? (
@@ -275,7 +275,7 @@ export default function AiIlaPage() {
                                 </Form.Item>
                             </div>
                             <Form.Item name="documentId" label="Seen On Photo">
-                                <Select allowClear options={data?.images.map((i) => ({ label: i.name, value: i.id })) ?? []} placeholder="Not on a photo" />
+                                <Select allowClear options={data?.images.map((i) => ({ label: i.name, value: i.id })) ?? []} placeholder="Select Photo (optional)" />
                             </Form.Item>
                         </>
                     ) : null}

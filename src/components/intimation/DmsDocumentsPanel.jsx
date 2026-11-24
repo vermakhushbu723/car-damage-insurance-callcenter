@@ -34,7 +34,7 @@ export default function DmsDocumentsPanel({ claimId, onSelect, ensureClaim, acti
         if (!id) return;
         for (const f of files) await docs.upload(type, f, id);
         if (id !== claimId) await docs.reload();
-        onChange?.();
+        onChange?.({ type });
     };
 
     const onTile = async (tile) => {

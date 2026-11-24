@@ -201,10 +201,10 @@ function HistoryTab() {
             </div>
             <div className="mb-3 grid gap-3 rounded-lg border border-slate-200 bg-[#f4f4f6] p-3 md:grid-cols-3">
                 <FieldLabel label="From" required>
-                    <DatePicker className="w-full" format="DD-MM-YYYY" placeholder="01-09-2026" />
+                    <DatePicker className="w-full" format="DD-MM-YYYY" placeholder="Select From Date" />
                 </FieldLabel>
                 <FieldLabel label="To" required>
-                    <DatePicker className="w-full" format="DD-MM-YYYY" placeholder="27-09-2026" />
+                    <DatePicker className="w-full" format="DD-MM-YYYY" placeholder="Select To Date" />
                 </FieldLabel>
                 <FieldLabel label="Status" required>
                     <NmSelect value={status} onChange={setStatus} options={['All', 'Open', 'Under review', 'Escalated', 'Cleared']} />
@@ -274,13 +274,13 @@ export function NmAuditPage() {
             </div>
             <div className="mb-3 grid items-end gap-2 md:grid-cols-3 xl:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
                 <FieldLabel label="Search Audit Logs">
-                    <NmInput value={query} onChange={(e) => setQuery(e.target.value)} placeholder="User,Claim,Action...." />
+                    <NmInput value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search User, Claim, Action" />
                 </FieldLabel>
                 <FieldLabel label="From">
-                    <DatePicker className="w-full" format="DD MMM YYYY" placeholder="01 Sep 2026" />
+                    <DatePicker className="w-full" format="DD MMM YYYY" placeholder="Select From Date" />
                 </FieldLabel>
                 <FieldLabel label="To">
-                    <DatePicker className="w-full" format="DD MMM YYYY" placeholder="04 Sep 2026" />
+                    <DatePicker className="w-full" format="DD MMM YYYY" placeholder="Select To Date" />
                 </FieldLabel>
                 <FieldLabel label="Module">
                     <NmSelect value={module} onChange={setModule} options={['All Modules', 'Claims', 'Users', 'Reports', 'System', 'Data']} />

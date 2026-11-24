@@ -288,7 +288,7 @@ export default function PaymentRecommendationPage() {
                                 </div>
                                 <div>
                                     <Label>Remarks</Label>
-                                    <Input placeholder="Remarks" disabled={!canEdit} value={details.remarks} onChange={setDetail('remarks')} />
+                                    <Input placeholder="Enter Remarks" disabled={!canEdit} value={details.remarks} onChange={setDetail('remarks')} />
                                 </div>
                             </div>
                         </section>
@@ -361,16 +361,16 @@ export default function PaymentRecommendationPage() {
                     </Form.Item>
                     <div className="grid grid-cols-2 gap-x-3">
                         <Form.Item name="bankName" label="Bank Name" rules={[{ required: true }]}>
-                            <Input placeholder="HDFC Bank Ltd." />
+                            <Input placeholder="Enter Bank Name" />
                         </Form.Item>
                         <Form.Item name="bankBranch" label="Branch">
-                            <Input placeholder="Noida" />
+                            <Input placeholder="Enter Branch" />
                         </Form.Item>
                         <Form.Item name="ifsc" label="IFSC Code" rules={[{ required: true, pattern: /^[A-Za-z]{4}0[A-Za-z0-9]{6}$/, message: 'e.g. HDFC0001234' }]}>
-                            <Input placeholder="HDFC0001234" />
+                            <Input placeholder="Enter IFSC Code" />
                         </Form.Item>
                         <Form.Item name="accountNo" label="Account No" rules={[{ required: true, pattern: /^\d{9,18}$/, message: '9-18 digits' }]}>
-                            <Input placeholder="123456789012345" />
+                            <Input placeholder="Enter Account Number" />
                         </Form.Item>
                     </div>
                 </Form>

@@ -44,7 +44,7 @@ function CheckboxField({ label, name, options, link, onChange }) {
  * recipients, dispatch status / auto reminder) and Letter Dispatch.
  * The I-Bima Assist ID is the claim's own Assist Claim ID (one ID per claim).
  */
-export default function LinkSection({ link, assistId, onChange, onGenerateId, generatingId, onGenerateLink, generatingLink, onSend, sending, onAutoReminder }) {
+export default function LinkSection({ link, assistId, insurerClaimNumber, onChange, onGenerateId, generatingId, onGenerateLink, generatingLink, onSend, sending, onAutoReminder }) {
     const { message } = App.useApp();
     const navigate = useNavigate();
 
@@ -108,6 +108,10 @@ export default function LinkSection({ link, assistId, onChange, onGenerateId, ge
                                 Generate Link
                             </Button>
                         </div>
+                        <p className="mt-1 mb-0 text-[10.5px] text-slate-500">
+                            Unique link of this claim -- Insurer Claim No: <b className="text-slate-700">{insurerClaimNumber || 'Not entered'}</b> · IBima Assist ID:{' '}
+                            <b className="text-slate-700">{assistId || 'Issued on save'}</b>
+                        </p>
                     </div>
 
                     <CheckboxField label="Send Via" name="sendVia" options={SEND_VIA_OPTIONS} link={link} onChange={onChange} />
@@ -117,10 +121,10 @@ export default function LinkSection({ link, assistId, onChange, onGenerateId, ge
                     </div>
                     <div>
                         <Label>Recipient Email</Label>
-                        <Input placeholder="Rohit.Kumar@Gmail.Com" value={link.email || ''} onChange={(e) => onChange('email', e.target.value)} />
+                        <Input placeholder="Enter Email ID" value={link.email || ''} onChange={(e) => onChange('email', e.target.value)} />
                     </div>
 
-                    <CheckboxField label="Dispatch Type" name="dispatchType" options={['Send Survey Link']} link={link} onChange={onChange} />
+                    {/* Dispatch Type: hidden for now */}
                     <CheckboxField label="Survey Link Recipient" name="recipients" options={RECIPIENT_OPTIONS} link={link} onChange={onChange} />
                     <div className="flex items-end">
                         <Button type="primary" size="large" block loading={sending} onClick={onSend}>

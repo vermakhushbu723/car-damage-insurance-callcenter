@@ -16,6 +16,21 @@ function FieldLabel({ children }) {
 }
 
 /**
+ * Placeholder that tells what to enter ("Enter Insured Name", "Select Make", "Select Date").
+ * Config placeholders are kept only when they are instructions, never demo values.
+ */
+const INSTRUCTION = /^(enter|select|search|type|click|choose|upload|add|dd|hh)/i;
+export function placeholderFor(field) {
+    if (field.placeholder && INSTRUCTION.test(field.placeholder)) return field.placeholder;
+    const label = String(field.label || field.name || '').replace(/\s*\*\s*$/, '').trim();
+    if (['select', 'state', 'tags'].includes(field.type)) return label ? `Select ${label}` : 'Select';
+    if (field.type === 'date') return 'Select Date';
+    if (field.type === 'time') return 'Select Time';
+    if (field.type === 'search') return label ? `Search ${label}` : 'Search';
+    return label ? `Enter ${label}` : 'Enter';
+}
+
+/**
  * Renders one entry of a form config.
  * Controlled through `value` / `onChange` so the page owns all form state.
  */
@@ -37,7 +52,7 @@ export default function DynamicField({ field, value, onChange, values, documents
 
     const handle = (next) => onChange?.(field.name, next);
     const common = {
-        placeholder: field.placeholder,
+        placeholder: placeholderFor(field),
         disabled: field.disabled,
         size: 'middle',
         className: 'w-full',
@@ -54,7 +69,7 @@ export default function DynamicField({ field, value, onChange, values, documents
                         onChange={handle}
                         allowClear
                         showSearch={{ optionFilterProp: 'label' }}
-                        placeholder={field.placeholder || 'Select State'}
+                        placeholder={placeholderFor(field)}
                     />
                 );
             case 'city': {
@@ -69,7 +84,7 @@ export default function DynamicField({ field, value, onChange, values, documents
                         options={list}
                         onChange={handle}
                         allowClear
-                        placeholder={state ? field.placeholder || 'Select or type city' : 'Select State first'}
+                        placeholder={state ? placeholderFor({ ...field, type: 'select' }) : 'Select State first'}
                     />
                 );
             }
@@ -83,7 +98,7 @@ export default function DynamicField({ field, value, onChange, values, documents
                             inputMode="numeric"
                             maxLength={6}
                             status={bad ? 'error' : undefined}
-                            placeholder={field.placeholder || 'Enter 6-digit pincode'}
+                            placeholder={INSTRUCTION.test(field.placeholder || '') ? field.placeholder : 'Enter 6-digit Pincode'}
                             onChange={(event) => handle(pinInput(event.target.value))}
                         />
                         {bad ? <span className="mt-0.5 block text-[10.5px] text-red-500">Enter a valid 6-digit pincode</span> : null}
@@ -107,7 +122,7 @@ export default function DynamicField({ field, value, onChange, values, documents
             case 'textarea':
                 return (
                     <TextArea
-                        placeholder={field.placeholder}
+                        placeholder={placeholderFor(field)}
                         rows={field.rows || 4}
                         value={value || ''}
                         onChange={(event) => handle(event.target.value)}
@@ -186,7 +201,7 @@ export default function DynamicField({ field, value, onChange, values, documents
                         </Checkbox.Group>
                         {field.extraInput ? (
                             <Input
-                                placeholder={field.extraInput.placeholder}
+                                placeholder={placeholderFor(field.extraInput)}
                                 value={values?.[field.extraInput.name] || ''}
                                 onChange={(event) => onChange?.(field.extraInput.name, event.target.value)}
                                 className="w-[120px]"

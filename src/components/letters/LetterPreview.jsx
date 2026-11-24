@@ -1,5 +1,5 @@
 import { LETTER_META } from '../../data/letterData.js';
-import { LogoMark } from '../common/Logo.jsx';
+import Logo from '../common/Logo.jsx';
 
 /**
  * The printable letter. Everything on it is derived from the form state,
@@ -9,12 +9,9 @@ export default function LetterPreview({ claim, letter, letterNo, issueDate, inst
     return (
         <article className="rounded-lg border border-slate-200 bg-white px-6 py-5 text-slate-800">
             <header className="mb-5 flex items-start justify-between gap-4">
-                <div className="flex items-center gap-2">
-                    <LogoMark className="h-6 w-6 text-[#1450d8]" />
-                    <span className="leading-tight">
-                        <span className="block text-[12.5px] font-bold text-slate-900">IBIMA ASSIST</span>
-                        <span className="block text-[9px] tracking-wide text-slate-500">Claims Management</span>
-                    </span>
+                <div className="leading-tight">
+                    <Logo height={42} />
+                    <span className="mt-0.5 block text-[9px] tracking-wide text-slate-500">Claims Management</span>
                 </div>
                 <div className="text-right text-[10px] text-slate-600">
                     <p className="mb-0.5">

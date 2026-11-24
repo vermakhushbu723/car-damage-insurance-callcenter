@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { App, Button, Spin, Switch } from 'antd';
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { LeftOutlined, RightOutlined, ScanOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,6 +23,10 @@ const MOMENT_FIELDS = new Set(
         .map((f) => f.name)
 );
 const toForm = (v = {}) => Object.fromEntries(Object.entries(v).map(([k, x]) => [k, MOMENT_FIELDS.has(k) && x ? dayjs(x) : x]));
+/** Documents the OCR reads (RC, policy, claim form, DL, FIR, permit, fitness, estimate). */
+const OCR_TYPES = new Set(['rc', 'policy-copy', 'claim-form', 'dl', 'fir', 'permit', 'fitness', 'estimate', 'kyc', 'other']);
+const isEmpty = (v) => v === undefined || v === null || v === '' || (Array.isArray(v) && !v.length);
+
 const toApi = (v) => Object.fromEntries(Object.entries(v).map(([k, x]) => [k, dayjs.isDayjs(x) ? x.toISOString() : x]));
 
 /**
@@ -63,6 +67,32 @@ export default function ClaimDetailsPage() {
     const completed = stepDone(claim, 'claim-details');
     const canEdit = can(MODULES.details, 'edit') && claim?.status !== 'Draft' && !completed;
 
+    // OCR: read the uploaded documents and fill the fields that are still empty.
+    const [ocr, setOcr] = useState(null);
+    const valuesRef = useRef(values);
+    valuesRef.current = values;
+    const runOcr = useCallback(
+        async ({ quiet = false } = {}) => {
+            if (!claim?.id || !canEdit) return;
+            setBusy('ocr');
+            try {
+                const res = await api.post(`/claims/${claim.id}/details/ocr`);
+                const found = toForm(res.values);
+                const filled = Object.keys(found).filter((k) => isEmpty(valuesRef.current[k]));
+                setValues((prev) => ({ ...prev, ...Object.fromEntries(filled.filter((k) => isEmpty(prev[k])).map((k) => [k, found[k]])) }));
+                setOcr({ ...res, filled });
+                const read = res.scanned.filter((s) => s.characters > 0).length;
+                if (filled.length) message.success(`OCR filled ${filled.length} field${filled.length > 1 ? 's' : ''} from the documents -- check and Submit to save`);
+                else if (!quiet) message.info(read ? 'OCR found nothing new: the fields it read are already filled' : 'Upload the RC / Policy / Claim Form / DL first (PDF or photo)');
+            } catch (err) {
+                if (!quiet) message.error(errText(err));
+            } finally {
+                setBusy(null);
+            }
+        },
+        [claim?.id, canEdit, message]
+    );
+
     const save = async (complete) => {
         setBusy(complete ? 'next' : 'save');
         try {
@@ -102,6 +132,23 @@ export default function ClaimDetailsPage() {
                             <Switch size="small" checked={editMode && canEdit} disabled={!canEdit} onChange={setEditMode} />
                         </span>
                     </header>
+
+                    {canEdit ? (
+                        <div className="mb-3 rounded-lg border border-dashed border-[#1450d8]/40 bg-[#f3f7ff] px-3 py-2">
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="text-[11px] text-slate-600">Read the uploaded documents and fill the empty fields</span>
+                                <Button size="small" type="primary" ghost icon={<ScanOutlined />} loading={busy === 'ocr'} onClick={() => runOcr()}>
+                                    Auto-fill (OCR)
+                                </Button>
+                            </div>
+                            {ocr ? (
+                                <p className="mt-1 mb-0 text-[10.5px] text-slate-500">
+                                    {ocr.filled.length ? `${ocr.filled.length} filled` : 'Nothing new'} · read{' '}
+                                    {ocr.scanned.length ? ocr.scanned.map((s) => `${s.label}${s.fields ? ` (${s.fields})` : ''}`).join(', ') : 'no documents'}
+                                </p>
+                            ) : null}
+                        </div>
+                    ) : null}
 
                     <div className="mb-3 flex justify-center gap-3">
                         <Button icon={<LeftOutlined />} disabled={tabIndex === 0} onClick={() => step(-1)} className="!text-[#1450d8]">
@@ -149,7 +196,11 @@ export default function ClaimDetailsPage() {
                 <DmsDocumentsPanel
                     claimId={claim?.id}
                     activeType={files[docIndex]?.type}
-                    onChange={() => docs.reload()}
+                    onChange={(info) => {
+                        docs.reload();
+                        // A new RC / policy / claim form ... : fill the empty fields from it.
+                        if (info?.type && OCR_TYPES.has(info.type)) runOcr({ quiet: true });
+                    }}
                     onSelect={(_tile, latest) => {
                         const i = files.findIndex((f) => f.id === latest.id);
                         if (i >= 0) setDocIndex(i);

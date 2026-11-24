@@ -155,7 +155,7 @@ function ClaimIdentityRow({ claim }) {
                 <div key={field.key}>
                     <span className="mb-1 block text-[11.5px] font-bold text-[#1450d8]">{field.label}</span>
                     <span className="flex items-center gap-2">
-                        <span className={cn('text-[13.5px] font-bold break-all', field.muted ? 'text-slate-400' : 'text-slate-900')}>
+                        <span className={cn('text-[13.5px] font-bold break-all', 'text-slate-900')}>
                             {field.value}
                         </span>
                         {field.copy ? (

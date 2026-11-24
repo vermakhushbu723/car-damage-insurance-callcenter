@@ -4,7 +4,7 @@ import { App, Button, Input } from 'antd';
 import { LockOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons';
 
 import loginImage from '../../assets/images/loginHero.jpg';
-import ibimaLogo from '../../assets/images/ibimaLogo.svg';
+import ibimaLogo from '../../assets/images/ibimaLogo.png';
 import { changePassword, getUser, login, logout, signIn } from '../../auth/session.js';
 import { landingForUser } from '../../constants/nationalManager.js';
 import ROUTES from '../../constants/routes.js';

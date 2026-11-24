@@ -283,13 +283,13 @@ export function NmBranchesPage() {
             >
                 <DrawerSection title="1. Branch Information">
                     <FieldLabel label="Branch Name" required>
-                        <NmInput value={form.name} onChange={set('name')} placeholder="Jaipur Branch" />
+                        <NmInput value={form.name} onChange={set('name')} placeholder="Enter Branch Name" />
                     </FieldLabel>
                     <FieldLabel label="Branch Code" required>
-                        <NmInput value={form.code} onChange={set('code')} placeholder="RJ009" />
+                        <NmInput value={form.code} onChange={set('code')} placeholder="Enter Branch Code" />
                     </FieldLabel>
                     <FieldLabel label="Organisation" required>
-                        <NmSelect value={form.organization} onChange={set('organization')} placeholder="ABG Insurance" options={uniq(BRANCHES.map((b) => b.organization))} />
+                        <NmSelect value={form.organization} onChange={set('organization')} placeholder="Select Organization" options={uniq(BRANCHES.map((b) => b.organization))} />
                     </FieldLabel>
                     <FieldLabel label="State" required>
                         <NmSelect
@@ -304,7 +304,7 @@ export function NmBranchesPage() {
                         <NmSelect showSearch value={form.city} onChange={set('city')} placeholder={form.state ? 'Select City' : 'Select State first'} options={citiesOf(form.state)} />
                     </FieldLabel>
                     <FieldLabel label="Address" required className="sm:col-span-2">
-                        <NmInput value={form.address} onChange={set('address')} placeholder="Plot No. 12 MI Road, Jaipur, Rajasthan - 302001" />
+                        <NmInput value={form.address} onChange={set('address')} placeholder="Enter Address" />
                     </FieldLabel>
                 </DrawerSection>
                 <DrawerSection title="2. Region (Auto Assigned)">

@@ -1,28 +1,12 @@
 import { App, Avatar, Dropdown, Tooltip } from 'antd';
 import { BellOutlined, CheckOutlined, DownOutlined, FilterOutlined, LogoutOutlined, MenuOutlined, SwapOutlined, UserOutlined } from '@ant-design/icons';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-import { TOP_NAV_ITEMS } from '../../constants/navigation.js';
 import { logout, switchRole } from '../../auth/session.js';
 import { useAppState } from '../../context/AppContext.jsx';
 import { isApprover, isClaimHandler, landingForUser } from '../../constants/nationalManager.js';
 import ROUTES from '../../constants/routes.js';
 import { goToRole, loginUrl } from '../../portal.js';
-
-function NavPill({ item }) {
-    const Icon = item.icon;
-    return (
-        <NavLink
-            to={item.path}
-            className="flex items-center gap-2 rounded-full px-1 py-1 text-white transition hover:bg-white/15"
-        >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#1450d8]">
-                <Icon className="text-[12.5px]" />
-            </span>
-            <span className="pr-2 text-[12.5px] font-semibold whitespace-nowrap">{item.label}</span>
-        </NavLink>
-    );
-}
 
 /**
  * Profile menu (next to the bell): name + active role, the user's roles to switch
@@ -138,13 +122,8 @@ export default function TopBar({ onMenuClick }) {
                 </button>
 
 
-                <nav className="ml-auto hidden items-center gap-2 lg:flex">
-                    {TOP_NAV_ITEMS.map((item) => (
-                        <NavPill key={item.key} item={item} />
-                    ))}
-                </nav>
 
-                <div className="ml-auto flex items-center gap-2 lg:ml-4">
+                <div className="ml-auto flex items-center gap-2">
                     <Tooltip title="Notifications are not connected yet">
                         <button
                             type="button"
