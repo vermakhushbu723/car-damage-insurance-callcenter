@@ -48,7 +48,7 @@ export default function useClaimDocuments(claimId) {
             setUploading((n) => n + 1);
             try {
                 const res = await uploadFile(`/claims/${encodeURIComponent(id)}/documents/${type}`, file);
-                setState({ types: res.types, files: res.files, pending: res.pending });
+                setState((prev) => ({ ...prev, types: res.types, files: res.files, pending: res.pending }));
                 message.success(`${file.name} uploaded`);
                 return res.document;
             } catch (err) {

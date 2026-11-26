@@ -3,8 +3,8 @@
 export const DMS_TABS = [
     { key: 'documents', label: 'Documents', icon: 'file' },
     { key: 'survey', label: 'Survey', icon: 'book' },
-    { key: 'assessment', label: 'Assesment', icon: 'experiment' },
-    { key: 'decision', label: 'Decisson', icon: 'info' },
+    { key: 'assessment', label: 'Assessment', icon: 'experiment' },
+    { key: 'decision', label: 'Decision', icon: 'info' },
 ];
 
 export const DOCUMENT_TYPES = [
