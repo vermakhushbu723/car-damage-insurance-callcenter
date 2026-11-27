@@ -65,7 +65,27 @@ export default function AiIlaPage() {
     const locked = data?.review.decision === 'Approved';
     const canEdit = can(MODULES.aiIla, 'edit') && claim?.status === 'Open' && !locked;
 
-    const runAi = () => call('run', () => api.post(`${base}/run`), (n) => `AI found ${n.rows.length} damage(s)`).then(() => reloadClaim());
+    // Gemini works in the background (202 + status running); the AI service answers at once.
+    const runAi = () =>
+        call('run', () => api.post(`${base}/run`), (n) => (n?.ai?.status === 'running' ? 'Gemini is checking the photos...' : `AI found ${n.rows.length} damage(s)`)).then(() => reloadClaim());
+    const aiRunning = data?.ai?.status === 'running';
+
+    // While Gemini is checking the photos, reload every few seconds; when it is done the rows appear.
+    useEffect(() => {
+        if (!aiRunning || !base) return undefined;
+        const t = setInterval(() => {
+            api.get(base)
+                .then((next) => {
+                    apply(next);
+                    if (next.ai.status === 'done') {
+                        message.success(`Gemini found ${next.rows.length} damage(s) -- the assessment is drafted from them`);
+                        reloadClaim();
+                    }
+                })
+                .catch(() => {});
+        }, 4000);
+        return () => clearInterval(t);
+    }, [aiRunning, base, apply, message, reloadClaim]);
 
     const updateRow = (id, field, value) => {
         setData((d) => ({ ...d, rows: d.rows.map((r) => (r.id === id ? { ...r, [field]: value } : r)) }));
@@ -178,6 +198,15 @@ export default function AiIlaPage() {
                         </p>
                     ) : data.ai.status === 'failed' ? (
                         <p className="mb-0 rounded-lg bg-red-50 px-4 py-2 text-[11.5px] text-red-600">Last AI run failed: {data.ai.error}</p>
+                    ) : aiRunning ? (
+                        <p className="mb-0 flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 text-[11.5px] text-blue-700">
+                            <Spin size="small" /> {data.ai.engine || 'AI'} is checking the DMS photos ({data.ai.progress?.done ?? 0} of {data.ai.progress?.photos ?? data.images.length}) -- the damage rows and the assessment
+                            draft appear here when it is done.
+                        </p>
+                    ) : data.ai.engine ? (
+                        <p className="mb-0 rounded-lg bg-slate-50 px-4 py-2 text-[11px] text-slate-500">
+                            Flow: Documents DMS photos → {data.ai.engine} (damage highlights in the DMS) → AI ILA rows → Assessment (Handler ILA)
+                        </p>
                     ) : null}
 
                     <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_330px]">
@@ -187,7 +216,7 @@ export default function AiIlaPage() {
                             activeKey={activeImage}
                             ai={data.ai}
                             canRun={canEdit && data.ai.configured && data.images.length > 0}
-                            running={busy === 'run'}
+                            running={busy === 'run' || aiRunning}
                             onRun={runAi}
                         />
                         <AiInsightsCard donuts={data.insights.donuts} rows={data.insights.rows} />
