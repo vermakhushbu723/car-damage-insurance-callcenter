@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { App, Button, Empty, Segmented, Select, Tooltip, Upload } from 'antd';
 import {
     ArrowLeftOutlined,
@@ -13,6 +13,7 @@ import {
     FileTextOutlined,
     InfoCircleOutlined,
     LinkOutlined,
+    RobotOutlined,
     LoadingOutlined,
     PlayCircleOutlined,
     SendOutlined,
@@ -43,10 +44,19 @@ const MULTI = ['vehicle-photos', 'other', 'surveyor-report', 'kyc', 'survey-vide
 const isImage = (f) => f.mime?.startsWith('image/');
 const isVideo = (f) => f.mime?.startsWith('video/');
 const isCustomer = (f) => f.uploadedById === CUSTOMER_ID;
+const isAi = (f) => f.uploadedById === 'gemini-ai';
+const SEVERITY_TONE = { Severe: 'bg-red-100 text-red-700', Moderate: 'bg-orange-100 text-orange-700', Minor: 'bg-yellow-100 text-yellow-800' };
 const RECOMMENDATION = { approved: 'Approved', rejected: 'Rejected', pending: 'Pending' };
 
 /** Small label: who uploaded the file. */
 function UploaderTag({ file }) {
+    if (isAi(file)) {
+        return (
+            <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700">
+                <RobotOutlined /> AI (Gemini)
+            </span>
+        );
+    }
     return isCustomer(file) ? (
         <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-semibold text-orange-700">
             <LinkOutlined /> Customer (Survey Link)
@@ -134,8 +144,76 @@ function DetailGrid({ rows }) {
     );
 }
 
+/** Gemini damage highlighting of the customer's photos: status, parts found, highlighted copies. */
+function AiPanel({ ai, files, canRun, running, onRun }) {
+    const aiFiles = files.filter((f) => f.type === 'ai-damage');
+    const byDoc = Object.fromEntries(aiFiles.map((f) => [f.id, f]));
+    const status = ai?.status;
+    const STATUS = {
+        running: { text: `Gemini is checking the photos... ${ai?.done ?? 0} of ${ai?.photos ?? 0} done`, tone: 'border-blue-200 bg-blue-50 text-blue-800', icon: <LoadingOutlined /> },
+        done: { text: `${ai?.damagesFound ?? 0} damaged area(s) found on ${ai?.photos ?? 0} photo(s)${ai?.failed ? ` · ${ai.failed} photo(s) could not be checked` : ''}`, tone: 'border-emerald-200 bg-emerald-50 text-emerald-800', icon: <CheckCircleFilled /> },
+        failed: { text: `AI highlighting failed: ${ai?.error || 'unknown error'}`, tone: 'border-red-200 bg-red-50 text-red-700', icon: <InfoCircleOutlined /> },
+        'not-configured': { text: 'AI highlighting is not switched on (GEMINI_API_KEY is not set on the server).', tone: 'border-slate-200 bg-slate-50 text-slate-600', icon: <InfoCircleOutlined /> },
+    };
+    const s = STATUS[status] ?? { text: 'Not run yet.', tone: 'border-slate-200 bg-slate-50 text-slate-600', icon: <ClockCircleOutlined /> };
+    return (
+        <section className="rounded-xl border border-violet-200 bg-white px-5 py-4">
+            <header className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <h3 className="mb-0 flex items-center gap-2 text-[13.5px] font-bold text-violet-700">
+                        <RobotOutlined /> AI Damage Highlights (Gemini)
+                    </h3>
+                    <p className="mb-0 text-[11px] text-slate-500">The customer's photos are checked by Gemini; damaged parts are boxed on a copy of each photo.</p>
+                </div>
+                {canRun ? (
+                    <Button size="small" icon={<SyncOutlined />} loading={running || status === 'running'} onClick={onRun}>
+                        {status ? 'Run AI Again' : 'Run AI'}
+                    </Button>
+                ) : null}
+            </header>
+            <p className={cn('mb-3 flex items-center gap-2 rounded-lg border px-3 py-2 text-[12px]', s.tone)}>
+                {s.icon} {s.text}
+            </p>
+            {ai?.results?.length ? (
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    {ai.results.map((r) => {
+                        const f = byDoc[r.docId];
+                        return (
+                            <div key={r.sourceId} className="overflow-hidden rounded-lg border border-slate-200">
+                                {f ? (
+                                    <a href={fileUrl(f.url)} target="_blank" rel="noreferrer" className="block bg-slate-100">
+                                        <img src={fileUrl(f.url)} alt={f.name} loading="lazy" className="h-[170px] w-full object-contain" />
+                                    </a>
+                                ) : null}
+                                <div className="px-3 py-2">
+                                    <p className="mb-1 truncate text-[11px] font-semibold text-slate-700" title={r.sourceName}>{r.sourceName}</p>
+                                    {r.error ? (
+                                        <p className="mb-0 text-[11px] text-red-600">Could not check: {r.error}</p>
+                                    ) : r.damages?.length ? (
+                                        <ul className="m-0 flex list-none flex-col gap-1 p-0">
+                                            {r.damages.map((d, i) => (
+                                                <li key={i} className="flex flex-wrap items-center gap-1.5 text-[11.5px] text-slate-800">
+                                                    <b>{i + 1}. {d.part}</b> · {d.damage}
+                                                    <span className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-semibold', SEVERITY_TONE[d.severity])}>{d.severity}</span>
+                                                    <span className="text-[10px] text-slate-500">{d.action}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="mb-0 text-[11px] text-slate-500">No visible damage.</p>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : null}
+        </section>
+    );
+}
+
 /** "Survey" tab: everything the customer did on the survey link. */
-function SurveyPanel({ survey, files }) {
+function SurveyPanel({ survey, files, canRunAi, aiRunning, onRunAi }) {
     if (!survey) {
         return (
             <section className="rounded-xl border border-slate-200 bg-white px-6 py-14">
@@ -196,6 +274,8 @@ function SurveyPanel({ survey, files }) {
                 </section>
             )}
 
+            {survey.submittedAt ? <AiPanel ai={survey.ai} files={files} canRun={canRunAi} running={aiRunning} onRun={onRunAi} /> : null}
+
             <section className="rounded-xl border border-slate-200 bg-white px-5 py-4">
                 <h3 className="mb-3 text-[13px] font-bold text-slate-900">Files From The Customer ({fromCustomer.length})</h3>
                 {fromCustomer.length ? (
@@ -220,6 +300,15 @@ export default function DocumentsDmsPage() {
     const [processing, setProcessing] = useState(false);
     const [busy, setBusy] = useState(null);
     const docs = useClaimDocuments(claim?.id);
+    const aiStatus = docs.state?.survey?.ai?.status;
+    const reloadDocs = docs.reload;
+
+    // While Gemini is working, refresh every few seconds so the highlights appear by themselves.
+    useEffect(() => {
+        if (aiStatus !== 'running') return undefined;
+        const t = setInterval(() => reloadDocs(), 4000);
+        return () => clearInterval(t);
+    }, [aiStatus, reloadDocs]);
 
     if (!claim) return <NoClaim />;
 
@@ -232,10 +321,23 @@ export default function DocumentsDmsPage() {
     const fromCustomer = files.filter(isCustomer).length;
     const shown = files.filter((f) => (filter === 'customer' ? isCustomer(f) : filter === 'staff' ? !isCustomer(f) : true));
     // Gallery grouped by document type (in the order of the checklist).
-    const typeOrder = [...DOCUMENT_TYPES.map((d) => d.type), 'survey-video', 'fir', 'permit', 'fitness', 'aadhar'];
+    const typeOrder = [...DOCUMENT_TYPES.map((d) => d.type), 'survey-video', 'ai-damage', 'fir', 'permit', 'fitness', 'aadhar'];
     const groups = [...new Set(shown.map((f) => f.type))]
         .sort((a, b) => (typeOrder.indexOf(a) + 1 || 99) - (typeOrder.indexOf(b) + 1 || 99))
         .map((type) => ({ type, label: shown.find((f) => f.type === type)?.typeLabel ?? type, files: shown.filter((f) => f.type === type) }));
+
+    const runAi = async () => {
+        setBusy('ai');
+        try {
+            await api.post(`/claims/${claim.id}/survey/ai`);
+            message.success('Gemini is checking the photos again');
+            await docs.reload();
+        } catch (err) {
+            message.error(errText(err));
+        } finally {
+            setBusy(null);
+        }
+    };
 
     const uploadType = async (type, multiple = false) => {
         const picked = await pickFiles({ multiple });
@@ -528,7 +630,7 @@ export default function DocumentsDmsPage() {
                     </section>
                 </>
             ) : tab === 'survey' ? (
-                <SurveyPanel survey={survey} files={files} />
+                <SurveyPanel survey={survey} files={files} canRunAi={can(MODULES.dms, 'edit')} aiRunning={busy === 'ai'} onRunAi={runAi} />
             ) : (
                 <section className="rounded-xl border border-slate-200 bg-white px-6 py-16 text-center">
                     <p className="mb-1 text-[13px] font-semibold text-slate-800">{DMS_TABS.find((item) => item.key === tab)?.label}</p>
